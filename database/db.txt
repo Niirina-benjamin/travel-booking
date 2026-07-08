@@ -1,0 +1,11 @@
+mysql://root:UsbudLGEbhZmSJSuHqLYjDTnsOrivwgN@hayabusa.proxy.rlwy.net:41804/railway
+
+Host: hayabusa.proxy.rlwy.net
+
+Port: 41804
+
+User: root
+
+Password: UsbudLGEbhZmSJSuHqLYjDTnsOrivwgN
+
+Database: railway

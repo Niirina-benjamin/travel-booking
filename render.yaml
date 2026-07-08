@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: travel-booking-api
+    env: node
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    envVars:
+      - key: DB_HOST
+        value: hayabusa.proxy.rlwy.net # URL publique Railway
+      - key: DB_USER
+        value: root
+      - key: DB_PASSWORD
+        value: UsbudLGEbhZmSJSuHqLYjDTnsOrivwgN
+      - key: DB_NAME
+        value: railway
+      - key: DB_PORT
+        value: 41804 # Port public Railway (ex: 12345)
+      - key: JWT_SECRET
+        value: 9FMfATI6QKC9L6xGvzf61JxbtkRdazVcIY7k35eWX1I=
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
