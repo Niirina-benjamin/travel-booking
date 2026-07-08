@@ -6,7 +6,7 @@ services:
     startCommand: node backend/server.js
     envVars:
       - key: DB_HOST
-        value: hayabusa.proxy.rlwy.net # URL publique Railway
+        value: hayabusa.proxy.rlwy.net
       - key: DB_USER
         value: root
       - key: DB_PASSWORD
