@@ -6,7 +6,7 @@ services:
     startCommand: node backend/server.js
     envVars:
       - key: DB_HOST
-        value: mysql.railway.internal
+        value: nirina
       - key: DB_USER
         value: root
       - key: DB_PASSWORD
@@ -14,7 +14,7 @@ services:
       - key: DB_NAME
         value: railway
       - key: DB_PORT
-        value: 3306 
+        value: 41804
       - key: JWT_SECRET
         value: 9FMfATI6QKC9L6xGvzf61JxbtkRdazVcIY7k35eWX1I=
       - key: PORT
