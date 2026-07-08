@@ -6,7 +6,7 @@ services:
     startCommand: node backend/server.js
     envVars:
       - key: DB_HOST
-        value: nirina.proxy.rlwy.net
+        value: mysql.railway.internal
       - key: DB_USER
         value: root
       - key: DB_PASSWORD
