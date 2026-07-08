@@ -14,7 +14,7 @@ services:
       - key: DB_NAME
         value: railway
       - key: DB_PORT
-        value: 41804 # Port public Railway (ex: 12345)
+        value: 3306 
       - key: JWT_SECRET
         value: 9FMfATI6QKC9L6xGvzf61JxbtkRdazVcIY7k35eWX1I=
       - key: PORT
