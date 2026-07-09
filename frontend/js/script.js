@@ -1,5 +1,5 @@
 // Configuration de l'API
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://travel-booking-ngzk.onrender.com';
 
 // Gestion du token
 let currentUser = null;
