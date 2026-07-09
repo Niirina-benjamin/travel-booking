@@ -1,6 +1,6 @@
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api' 
-    : 'https://travel-booking-api.onrender.com/api';
+    : '/api';
 
 const token = localStorage.getItem('token');
 
