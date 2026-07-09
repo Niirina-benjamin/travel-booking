@@ -11,7 +11,42 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 
 // Middleware
-app.use(cors());
+// ✅ Configuration CORS explicite
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Liste des origines autorisées
+        const allowedOrigins = [
+            'https://travel-booking-ngzk.onrender.com',  // Votre frontend Render
+            'https://travel-booking-api.onrender.com',   // Votre API Render
+            'http://localhost:5500',                      // Live Server
+            'http://127.0.0.1:5500',
+            'http://localhost:3000',                      // Serveur local
+            'http://127.0.0.1:3000',
+            undefined                                     // Pour les requêtes sans origine (ex: Postman)
+        ];
+        
+        // Permettre les requêtes sans origine (comme les apps mobiles, Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            console.log('❌ CORS bloqué pour:', origin);
+            callback(new Error('Non autorisé par CORS'));
+        }
+    },
+    credentials: true,  // Important pour les cookies et tokens
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Authorization'],
+    maxAge: 86400  // Cache de la pré-volée OPTIONS pendant 24h
+};
+
+// Appliquer la configuration CORS
+app.use(cors(corsOptions));
+
+// Pour les requêtes OPTIONS (pré-volée)
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Servir les fichiers statiques CORRECTEMENT
