@@ -1,5 +1,5 @@
-// Configuration de l'API
-const API_URL = 'https://travel-booking-ngzk.onrender.com';
+// Configuration de l'API - CORRECTION ICI
+const API_URL = 'https://travel-booking-ngzk.onrender.com/api';
 
 // Gestion du token
 let currentUser = null;
@@ -10,7 +10,10 @@ if (token) {
     fetch(`${API_URL}/auth/verify`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Token invalide');
+        return response.json();
+    })
     .then(data => {
         if (data.user) {
             currentUser = data.user;
