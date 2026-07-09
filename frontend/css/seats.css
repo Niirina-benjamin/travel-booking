@@ -1,0 +1,108 @@
+.bus-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.bus-front, .bus-back {
+    text-align: center;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.seats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.seat {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 14px;
+    user-select: none;
+}
+
+.seat.available {
+    background: #28a745;
+    color: white;
+    border: 2px solid #1e7e34;
+}
+
+.seat.available:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.seat.selected {
+    background: #007bff;
+    color: white;
+    border: 2px solid #0056b3;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+.seat.reserved {
+    background: #dc3545;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.seat.blocked {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.aisle {
+    grid-column: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+.passenger-tag {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ffc107;
+    color: #000;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+#selectedSeatsList .badge {
+    margin: 2px;
+    font-size: 14px;
+    padding: 8px;
+}
