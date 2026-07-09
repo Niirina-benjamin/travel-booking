@@ -70,4 +70,41 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Vérification du token (AJOUTER CE CODE)
+router.get('/verify', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Token non fourni ou invalide' });
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        // Vérifier et décoder le token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Récupérer les informations de l'utilisateur depuis la base de données
+        const [users] = await db.query(
+            'SELECT id, nom, email, role FROM users WHERE id = ?',
+            [decoded.id]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ user: users[0] });
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Token invalide' });
+        }
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expiré' });
+        }
+        console.error('Erreur de vérification du token:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+ 
 module.exports = router;
