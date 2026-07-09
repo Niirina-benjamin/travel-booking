@@ -1,5 +1,6 @@
 // Récupérer les données de réservation
 const bookingData = JSON.parse(localStorage.getItem('lastBooking'));
+const API_URL = window.location.origin + '/api';
 
 if (bookingData) {
     document.getElementById('bookingRef').textContent = '#' + bookingData.bookingId;

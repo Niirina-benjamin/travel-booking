@@ -1,5 +1,6 @@
 // Configuration de l'API - CORRECTION ICI
 const API_URL = 'https://travel-booking-ngzk.onrender.com/api';
+const API_URL = window.location.origin + '/api';
 
 // Gestion du token
 let currentUser = null;
