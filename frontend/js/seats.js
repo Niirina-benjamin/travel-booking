@@ -43,12 +43,16 @@ async function loadTripAndSeats() {
         
         if (tripData.seats_available && tripData.seats_available.length > 0) {
             console.log('✅ Sièges de l\'API:', tripData.seats_available.length);
+            // Trier les sièges par numéro
+            tripData.seats_available.sort((a, b) => {
+                const numA = parseInt(a.numero_siege.replace(/\D/g, ''));
+                const numB = parseInt(b.numero_siege.replace(/\D/g, ''));
+                return numA - numB;
+            });
             generateSeats(tripData.seats_available);
         } else {
             console.warn('⚠️ Pas de données de sièges, génération de sièges test');
-            const capacity = tripData.places_disponibles || 50;
-            console.log('📊 Capacité du véhicule:', capacity);
-            generateTestSeats(capacity);
+            generateTestSeats(tripData.places_disponibles || 50);
         }
         
     } catch (error) {
@@ -56,13 +60,9 @@ async function loadTripAndSeats() {
         document.getElementById('tripDetails').innerHTML = `
             <div class="alert alert-danger">
                 <strong>Erreur de chargement</strong><br>
-                ${error.message}<br>
-                <small class="text-muted">URL: ${API_URL}/trips/${tripId}</small>
+                ${error.message}
             </div>
         `;
-        
-        // En cas d'erreur, générer des sièges de test
-        console.log('🔄 Génération de sièges de secours...');
         generateTestSeats(50);
     }
 }
@@ -72,43 +72,26 @@ function generateTestSeats(capacity) {
     console.log('🎲 Génération de', capacity, 'sièges de test...');
     
     const seats = [];
-    const totalRows = Math.ceil(capacity / 4); // 4 sièges par rangée
     
-    console.log('📐 Nombre de rangées:', totalRows);
-    
-    for (let row = 0; row < totalRows; row++) {
-        const rowLetter = String.fromCharCode(65 + row); // A=65, B=66, C=67...
+    for (let i = 1; i <= capacity; i++) {
+        let statut;
+        const random = Math.random();
         
-        for (let col = 1; col <= 4; col++) {
-            const seatNumber = row * 4 + col;
-            
-            if (seatNumber <= capacity) {
-                const seatId = `${rowLetter}${col}`;
-                
-                // Déterminer le statut aléatoirement
-                let statut;
-                const random = Math.random();
-                
-                if (random < 0.6) {
-                    statut = 'disponible';
-                } else if (random < 0.85) {
-                    statut = 'reserve';
-                } else {
-                    statut = 'bloque';
-                }
-                
-                seats.push({
-                    numero_siege: seatId,
-                    statut: statut
-                });
-            }
+        if (random < 0.6) {
+            statut = 'disponible';
+        } else if (random < 0.85) {
+            statut = 'reserve';
+        } else {
+            statut = 'bloque';
         }
+        
+        seats.push({
+            numero_siege: `A${i}`,
+            statut: statut
+        });
     }
     
     console.log('✅ Sièges générés:', seats.length);
-    console.log('📋 Échantillon:', seats.slice(0, 10).map(s => s.numero_siege + ':' + s.statut));
-    console.log('📋 Derniers:', seats.slice(-5).map(s => s.numero_siege + ':' + s.statut));
-    
     generateSeats(seats);
 }
 
@@ -128,6 +111,8 @@ function displayTripDetails() {
 // Générer la grille des sièges
 function generateSeats(seats) {
     console.log('🪑 Génération de la grille pour', seats.length, 'sièges');
+    console.log('📋 5 premiers:', seats.slice(0, 5).map(s => s.numero_siege));
+    console.log('📋 5 derniers:', seats.slice(-5).map(s => s.numero_siege));
     
     const container = document.getElementById('seatsContainer');
     if (!container) {
@@ -138,89 +123,54 @@ function generateSeats(seats) {
     // Vider le conteneur
     container.innerHTML = '';
     
-    // Grouper les sièges par rangée (lettre)
-    const rows = {};
-    seats.forEach(seat => {
-        // Extraire la lettre de la rangée (A, B, C...)
-        const match = seat.numero_siege.match(/^([A-Z]+)/i);
-        const rowLetter = match ? match[1].toUpperCase() : 'A';
-        
-        if (!rows[rowLetter]) {
-            rows[rowLetter] = [];
-        }
-        rows[rowLetter].push(seat);
-    });
+    // Nombre de sièges par rangée visuelle (2 gauche + 2 droite = 4 par ligne)
+    const SEATS_PER_ROW = 4;
+    const totalRows = Math.ceil(seats.length / SEATS_PER_ROW);
     
-    // Trier les rangées alphabétiquement
-    const sortedRows = Object.keys(rows).sort();
+    console.log('📐 Nombre de lignes visuelles:', totalRows);
     
-    console.log('📊 Rangées trouvées:', sortedRows.length);
-    console.log('📋 Rangées:', sortedRows.join(', '));
-    
-    // Afficher le nombre de sièges par rangée
-    sortedRows.forEach(row => {
-        console.log(`  Rangée ${row}: ${rows[row].length} sièges - ${rows[row].map(s => s.numero_siege).join(', ')}`);
-    });
-    
-    // Générer le HTML des sièges
     let seatsHTML = '';
     
-    sortedRows.forEach(rowLetter => {
-        const rowSeats = rows[rowLetter];
+    // Générer les sièges ligne par ligne
+    for (let row = 0; row < totalRows; row++) {
+        const startIndex = row * SEATS_PER_ROW;
+        const rowSeats = seats.slice(startIndex, startIndex + SEATS_PER_ROW);
         
-        // Trier les sièges par numéro dans la rangée
-        rowSeats.sort((a, b) => {
-            const numA = parseInt(a.numero_siege.replace(/[A-Z]+/i, ''));
-            const numB = parseInt(b.numero_siege.replace(/[A-Z]+/i, ''));
-            return numA - numB;
-        });
+        console.log(`📐 Ligne ${row + 1}: sièges ${startIndex + 1} à ${startIndex + rowSeats.length} - ${rowSeats.map(s => s.numero_siege).join(', ')}`);
         
-        // Sièges de gauche (positions 1 et 2)
-        for (let i = 0; i < Math.min(2, rowSeats.length); i++) {
-            seatsHTML += createSeatHTML(rowSeats[i]);
+        // Sièges de gauche (2 premiers)
+        for (let i = 0; i < 2; i++) {
+            if (i < rowSeats.length) {
+                seatsHTML += createSeatHTML(rowSeats[i]);
+            } else {
+                // Place vide si moins de 2 sièges à gauche
+                seatsHTML += '<div class="seat seat-empty"></div>';
+            }
         }
         
         // Allée centrale
-        if (rowSeats.length > 2) {
-            seatsHTML += '<div class="aisle">ALLÉE</div>';
-            
-            // Sièges de droite (positions 3 et 4)
-            for (let i = 2; i < Math.min(4, rowSeats.length); i++) {
-                seatsHTML += createSeatHTML(rowSeats[i]);
-            }
-        }
+        seatsHTML += '<div class="aisle">ALLÉE</div>';
         
-        // Ajouter des sièges vides si moins de 4 sièges dans la rangée
-        const totalInRow = rowSeats.length;
-        if (totalInRow < 4) {
-            // Sièges manquants à gauche
-            if (totalInRow <= 2) {
-                // Ajouter les sièges manquants à gauche
-                for (let i = totalInRow; i < 2; i++) {
-                    seatsHTML += '<div class="seat" style="visibility: hidden;"></div>';
-                }
-                seatsHTML += '<div class="aisle"></div>';
-                for (let i = 0; i < 2; i++) {
-                    seatsHTML += '<div class="seat" style="visibility: hidden;"></div>';
-                }
-            }
-            // Sièges manquants à droite
-            if (totalInRow > 2 && totalInRow < 4) {
-                for (let i = totalInRow - 2; i < 2; i++) {
-                    seatsHTML += '<div class="seat" style="visibility: hidden;"></div>';
-                }
+        // Sièges de droite (2 derniers)
+        for (let i = 2; i < 4; i++) {
+            if (i < rowSeats.length) {
+                seatsHTML += createSeatHTML(rowSeats[i]);
+            } else {
+                // Place vide si moins de 2 sièges à droite
+                seatsHTML += '<div class="seat seat-empty"></div>';
             }
         }
-    });
+    }
     
     container.innerHTML = seatsHTML;
     
+    const visibleSeats = container.querySelectorAll('.seat:not(.seat-empty)');
     console.log('✅ Grille générée avec succès');
-    console.log('📊 Total éléments dans la grille:', container.children.length);
+    console.log('📊 Sièges visibles:', visibleSeats.length);
     
     updateSummary();
     
-    // Debug
+    // Debug après 1 seconde
     setTimeout(debugSeats, 1000);
 }
 
@@ -256,21 +206,16 @@ function createSeatHTML(seat) {
 
 // Sélectionner/Désélectionner un siège
 function toggleSeat(element, seatNumber) {
-    console.log('🔄 Toggle siège:', seatNumber);
-    
     if (element.classList.contains('selected')) {
-        // Désélectionner
         element.classList.remove('selected');
         element.classList.add('available');
         selectedSeats = selectedSeats.filter(s => s !== seatNumber);
     } else {
-        // Vérifier le nombre maximum
         const passagers = parseInt(localStorage.getItem('passagers') || 1);
         if (selectedSeats.length >= passagers) {
             alert(`Vous ne pouvez sélectionner que ${passagers} siège(s)`);
             return;
         }
-        // Sélectionner
         element.classList.remove('available');
         element.classList.add('selected');
         selectedSeats.push(seatNumber);
@@ -318,8 +263,6 @@ document.getElementById('confirmBooking')?.addEventListener('click', async () =>
     }
     
     try {
-        console.log('📡 Envoi réservation...');
-        
         const response = await fetch(`${API_URL}/bookings`, {
             method: 'POST',
             headers: {
@@ -358,16 +301,15 @@ function debugSeats() {
     const allSeats = document.querySelectorAll('#seatsContainer .seat');
     console.log(`\n🔍 === ANALYSE DES SIÈGES (${allSeats.length} éléments) ===`);
     
-    const stats = { available: 0, selected: 0, reserved: 0, blocked: 0, hidden: 0 };
+    const stats = { available: 0, selected: 0, reserved: 0, blocked: 0, empty: 0 };
     
     allSeats.forEach((seat, index) => {
         const text = seat.textContent.trim();
         const classes = seat.className;
         const status = seat.getAttribute('data-status');
-        const visibility = window.getComputedStyle(seat).visibility;
         
-        if (visibility === 'hidden') {
-            stats.hidden++;
+        if (classes.includes('seat-empty')) {
+            stats.empty++;
             return;
         }
         
@@ -378,7 +320,7 @@ function debugSeats() {
         
         // Afficher les 5 premiers et 5 derniers
         if (index < 5 || index >= allSeats.length - 5) {
-            console.log(`  [${index}] ${text || '(vide)'} - ${classes} - ${visibility}`);
+            console.log(`  [${index}] ${text || '(vide)'} - ${classes}`);
         }
     });
     
