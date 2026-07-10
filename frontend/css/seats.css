@@ -1,86 +1,110 @@
+/* Container principal */
 .bus-container {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 20px;
     padding: 30px;
     margin: 20px 0;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    min-height: 400px;
 }
 
 .bus-front, .bus-back {
     text-align: center;
     color: white;
-    padding: 10px;
+    padding: 15px;
     font-size: 18px;
     font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin: 10px 0;
 }
 
+/* Grille des sièges */
 .seats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     padding: 20px;
-    max-width: 500px;
+    max-width: 400px;
     margin: 0 auto;
 }
 
+/* Style de base des sièges */
 .seat {
     aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
     transition: all 0.3s ease;
     position: relative;
-    font-size: 14px;
     user-select: none;
+    min-width: 60px;
+    min-height: 60px;
+    border: 2px solid transparent;
 }
 
+/* Siège DISPONIBLE - VERT */
 .seat.available {
-    background: #28a745;
-    color: white;
-    border: 2px solid #1e7e34;
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #1e7e34 !important;
 }
 
 .seat.available:hover {
     transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    background-color: #218838 !important;
 }
 
+/* Siège SÉLECTIONNÉ - BLEU */
 .seat.selected {
-    background: #007bff;
-    color: white;
-    border: 2px solid #0056b3;
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #0056b3 !important;
     transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
 }
 
+/* Siège RÉSERVÉ - ROUGE */
 .seat.reserved {
-    background: #dc3545;
-    color: white;
-    cursor: not-allowed;
-    opacity: 0.6;
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #b02a37 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    pointer-events: none;
 }
 
+/* Siège BLOQUÉ - GRIS */
 .seat.blocked {
-    background: #6c757d;
-    color: white;
-    cursor: not-allowed;
+    background-color: #6c757d !important;
+    color: white !important;
+    border-color: #545b62 !important;
+    cursor: not-allowed !important;
     opacity: 0.5;
+    pointer-events: none;
 }
 
+/* Allée centrale */
 .aisle {
-    grid-column: 3;
+    grid-column: span 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
     writing-mode: vertical-rl;
     text-orientation: mixed;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    padding: 5px;
 }
 
+/* Badge des passagers */
 .passenger-tag {
     position: absolute;
     top: -8px;
@@ -88,21 +112,60 @@
     background: #ffc107;
     color: #000;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     font-size: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    z-index: 2;
+    border: 2px solid white;
 }
 
-.card-header {
-    font-weight: bold;
+/* Légende */
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-#selectedSeatsList .badge {
-    margin: 2px;
-    font-size: 14px;
-    padding: 8px;
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Animation de sélection */
+@keyframes selectPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1.1); }
+}
+
+.seat.selected {
+    animation: selectPulse 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .seats-grid {
+        max-width: 300px;
+        gap: 10px;
+    }
+    
+    .seat {
+        font-size: 11px;
+        min-width: 45px;
+        min-height: 45px;
+    }
 }

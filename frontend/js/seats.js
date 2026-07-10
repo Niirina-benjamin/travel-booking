@@ -66,6 +66,7 @@ async function loadTripAndSeats() {
 }
 
 // Générer des sièges de test si l'API ne renvoie pas de sièges
+// Générer des sièges de test avec différents statuts
 function generateTestSeats(capacity) {
     const seats = [];
     const rows = Math.ceil(capacity / 4);
@@ -75,16 +76,34 @@ function generateTestSeats(capacity) {
         for (let col = 0; col < 4; col++) {
             if (seatNumber <= capacity) {
                 const seatId = `${String.fromCharCode(64 + row)}${col + 1}`;
+                
+                // Déterminer le statut aléatoirement
+                let statut;
+                const random = Math.random();
+                
+                if (random < 0.6) {
+                    statut = 'disponible';  // 60% disponibles
+                } else if (random < 0.8) {
+                    statut = 'reserve';     // 20% réservés
+                } else {
+                    statut = 'bloque';      // 20% bloqués
+                }
+                
                 seats.push({
                     numero_siege: seatId,
-                    statut: Math.random() > 0.3 ? 'disponible' : 'reserve'
+                    statut: statut
                 });
+                
                 seatNumber++;
             }
         }
     }
     
-    console.log('🎲 Sièges test générés:', seats.length);
+    console.log('🎲 Sièges test générés:');
+    console.log('  - Disponibles:', seats.filter(s => s.statut === 'disponible').length);
+    console.log('  - Réservés:', seats.filter(s => s.statut === 'reserve').length);
+    console.log('  - Bloqués:', seats.filter(s => s.statut === 'bloque').length);
+    
     generateSeats(seats);
 }
 
@@ -102,6 +121,7 @@ function displayTripDetails() {
 }
 
 // Générer la grille des sièges
+// Générer la grille des sièges
 function generateSeats(seats) {
     const container = document.getElementById('seatsContainer');
     if (!container) {
@@ -109,16 +129,66 @@ function generateSeats(seats) {
         return;
     }
     
+    console.log('🪑 Génération des sièges:', seats.length, 'sièges');
+    
     let seatsHTML = '';
     
+    // Ajouter la légende
+    seatsHTML += `
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #28a745;"></div>
+                <span>Disponible</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #007bff;"></div>
+                <span>Sélectionné</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <span>Réservé</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6c757d;"></div>
+                <span>Bloqué</span>
+            </div>
+        </div>
+    `;
+    
     seats.forEach((seat, index) => {
-        // Ajouter une allée tous les 2 sièges
+        // Ajouter une allée après chaque 2 sièges
         if (index % 4 === 2) {
-            seatsHTML += '<div class="aisle">ALLÉE</div>';
+            seatsHTML += '<div class="aisle">COULOIR</div>';
         }
         
-        const statusClass = getStatusClass(seat.statut);
-        const clickable = seat.statut === 'disponible' 
+        // Déterminer la classe CSS selon le statut
+        let statusClass = 'available';
+        let isClickable = true;
+        
+        // Normaliser le statut (au cas où il y aurait des variations)
+        const status = (seat.statut || '').toLowerCase().trim();
+        
+        console.log(`Siège ${seat.numero_siege} - Statut: "${status}"`);
+        
+        switch(status) {
+            case 'reserve':
+            case 'réservé':
+                statusClass = 'reserved';
+                isClickable = false;
+                break;
+            case 'bloque':
+            case 'bloqué':
+                statusClass = 'blocked';
+                isClickable = false;
+                break;
+            case 'disponible':
+            default:
+                statusClass = 'available';
+                isClickable = true;
+                break;
+        }
+        
+        const clickHandler = isClickable 
             ? `onclick="toggleSeat(this, '${seat.numero_siege}')"` 
             : '';
         
@@ -126,14 +196,38 @@ function generateSeats(seats) {
             <div class="seat ${statusClass}" 
                  id="seat-${seat.numero_siege}"
                  data-seat="${seat.numero_siege}"
-                 ${clickable}>
+                 data-status="${status}"
+                 ${clickHandler}
+                 title="Siège ${seat.numero_siege} - ${status}">
                 ${seat.numero_siege}
+                ${!isClickable ? '<span class="passenger-tag">✕</span>' : ''}
             </div>
         `;
     });
     
     container.innerHTML = seatsHTML;
     updateSummary();
+    
+    console.log('✅ Sièges générés avec succès');
+}
+
+// Fonction pour obtenir la classe CSS (fallback)
+function getStatusClass(status) {
+    if (!status) return 'available';
+    
+    const normalizedStatus = status.toLowerCase().trim();
+    
+    switch(normalizedStatus) {
+        case 'reserve':
+        case 'réservé':
+            return 'reserved';
+        case 'bloque':
+        case 'bloqué':
+            return 'blocked';
+        case 'disponible':
+        default:
+            return 'available';
+    }
 }
 
 // Obtenir la classe CSS selon le statut
@@ -244,3 +338,39 @@ document.getElementById('confirmBooking')?.addEventListener('click', async () =>
 // Initialiser la page
 console.log('🚀 Initialisation de la page sièges...');
 loadTripAndSeats();
+
+// Fonction de débogage
+function debugSeats() {
+    const allSeats = document.querySelectorAll('.seat');
+    console.log('🔍 Analyse des sièges:');
+    
+    const stats = {
+        available: 0,
+        selected: 0,
+        reserved: 0,
+        blocked: 0
+    };
+    
+    allSeats.forEach(seat => {
+        const classes = seat.className;
+        const dataStatus = seat.getAttribute('data-status');
+        const bgColor = window.getComputedStyle(seat).backgroundColor;
+        
+        console.log(`Siège ${seat.textContent.trim()}:`);
+        console.log(`  Classes: ${classes}`);
+        console.log(`  Data-status: ${dataStatus}`);
+        console.log(`  Couleur de fond: ${bgColor}`);
+        
+        if (classes.includes('available')) stats.available++;
+        if (classes.includes('selected')) stats.selected++;
+        if (classes.includes('reserved')) stats.reserved++;
+        if (classes.includes('blocked')) stats.blocked++;
+    });
+    
+    console.log('📊 Statistiques:', stats);
+    return stats;
+}
+
+// Appeler après la génération des sièges
+// Ajoutez cette ligne après generateSeats()
+setTimeout(debugSeats, 1000);
