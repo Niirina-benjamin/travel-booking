@@ -5,167 +5,124 @@
     padding: 30px;
     margin: 20px 0;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    min-height: 400px;
 }
 
 .bus-front, .bus-back {
     text-align: center;
     color: white;
-    padding: 15px;
+    padding: 10px;
     font-size: 18px;
     font-weight: bold;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    margin: 10px 0;
 }
 
-/* Grille des sièges */
+/* Grille des sièges - 4 colonnes, 2 de chaque côté de l'allée */
 .seats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+    grid-template-columns: 1fr 1fr 60px 1fr 1fr; /* 2 sièges gauche | allée | 2 sièges droite */
+    gap: 10px;
     padding: 20px;
-    max-width: 400px;
+    max-width: 500px;
     margin: 0 auto;
 }
 
 /* Style de base des sièges */
 .seat {
     aspect-ratio: 1;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 10px !important;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
     font-weight: bold;
-    font-size: 14px;
     transition: all 0.3s ease;
     position: relative;
+    font-size: 14px;
     user-select: none;
-    min-width: 60px;
-    min-height: 60px;
-    border: 2px solid transparent;
+    min-height: 50px;
+    border: 2px solid rgba(0,0,0,0.1);
 }
 
 /* Siège DISPONIBLE - VERT */
 .seat.available {
-    background-color: #28a745 !important;
-    color: white !important;
-    border-color: #1e7e34 !important;
+    background: #28a745;
+    color: white;
+    cursor: pointer;
 }
 
 .seat.available:hover {
     transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-    background-color: #218838 !important;
+    z-index: 1;
 }
 
 /* Siège SÉLECTIONNÉ - BLEU */
 .seat.selected {
-    background-color: #007bff !important;
-    color: white !important;
-    border-color: #0056b3 !important;
-    transform: scale(1.1);
+    background: #007bff;
+    color: white;
+    transform: scale(1.05);
     box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    cursor: pointer;
 }
 
-/* Siège RÉSERVÉ - ROUGE */
+/* Siège RÉSERVÉ - ROUGE (toujours visible) */
 .seat.reserved {
-    background-color: #dc3545 !important;
-    color: white !important;
-    border-color: #b02a37 !important;
-    cursor: not-allowed !important;
-    opacity: 0.7;
-    pointer-events: none;
+    background: #dc3545;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.8;
 }
 
-/* Siège BLOQUÉ - GRIS */
+/* Siège BLOQUÉ - GRIS (toujours visible) */
 .seat.blocked {
-    background-color: #6c757d !important;
-    color: white !important;
-    border-color: #545b62 !important;
-    cursor: not-allowed !important;
-    opacity: 0.5;
-    pointer-events: none;
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Allée centrale */
 .aisle {
-    grid-column: span 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255,255,255,0.6);
-    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    background: rgba(255,255,255,0.1);
-    border-radius: 5px;
-    padding: 5px;
-}
-
-/* Badge des passagers */
-.passenger-tag {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ffc107;
-    color: #000;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: bold;
-    z-index: 2;
-    border: 2px solid white;
 }
 
 /* Légende */
 .legend {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 20px;
+    margin: 15px 0;
     flex-wrap: wrap;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
+    font-size: 14px;
 }
 
 .legend-color {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     border-radius: 5px;
-    border: 1px solid rgba(0,0,0,0.2);
-}
-
-/* Animation de sélection */
-@keyframes selectPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-    100% { transform: scale(1.1); }
-}
-
-.seat.selected {
-    animation: selectPulse 0.3s ease;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .seats-grid {
-        max-width: 300px;
-        gap: 10px;
+        max-width: 350px;
+        gap: 8px;
+        grid-template-columns: 1fr 1fr 40px 1fr 1fr;
     }
     
     .seat {
-        font-size: 11px;
-        min-width: 45px;
-        min-height: 45px;
+        font-size: 12px;
+        min-height: 40px;
     }
 }

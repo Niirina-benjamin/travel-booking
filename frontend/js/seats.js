@@ -122,96 +122,150 @@ function displayTripDetails() {
 
 // Générer la grille des sièges
 // Générer la grille des sièges
+// Générer la grille des sièges avec disposition correcte
+// Générer des sièges de test avec disposition correcte
 function generateSeats(seats) {
     const container = document.getElementById('seatsContainer');
-    if (!container) {
-        console.error('❌ Conteneur de sièges non trouvé');
-        return;
-    }
+    if (!container) return;
     
-    console.log('🪑 Génération des sièges:', seats.length, 'sièges');
-    
-    let seatsHTML = '';
-    
-    // Ajouter la légende
-    seatsHTML += `
+    // Créer la structure de base
+    container.innerHTML = `
         <div class="legend">
             <div class="legend-item">
-                <div class="legend-color" style="background-color: #28a745;"></div>
+                <div class="legend-color" style="background: #28a745;"></div>
                 <span>Disponible</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background-color: #007bff;"></div>
+                <div class="legend-color" style="background: #007bff;"></div>
                 <span>Sélectionné</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <div class="legend-color" style="background: #dc3545;"></div>
                 <span>Réservé</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background-color: #6c757d;"></div>
+                <div class="legend-color" style="background: #6c757d;"></div>
                 <span>Bloqué</span>
             </div>
         </div>
+        <div class="bus-front">🚌 Avant du bus</div>
+        <div class="seats-grid" id="seatsGrid"></div>
+        <div class="bus-back">Arrière du bus 🚌</div>
     `;
     
-    seats.forEach((seat, index) => {
-        // Ajouter une allée après chaque 2 sièges
-        if (index % 4 === 2) {
-            seatsHTML += '<div class="aisle">COULOIR</div>';
-        }
-        
-        // Déterminer la classe CSS selon le statut
-        let statusClass = 'available';
-        let isClickable = true;
-        
-        // Normaliser le statut (au cas où il y aurait des variations)
-        const status = (seat.statut || '').toLowerCase().trim();
-        
-        console.log(`Siège ${seat.numero_siege} - Statut: "${status}"`);
-        
-        switch(status) {
-            case 'reserve':
-            case 'réservé':
-                statusClass = 'reserved';
-                isClickable = false;
-                break;
-            case 'bloque':
-            case 'bloqué':
-                statusClass = 'blocked';
-                isClickable = false;
-                break;
-            case 'disponible':
-            default:
-                statusClass = 'available';
-                isClickable = true;
-                break;
-        }
-        
-        const clickHandler = isClickable 
-            ? `onclick="toggleSeat(this, '${seat.numero_siege}')"` 
-            : '';
-        
-        seatsHTML += `
-            <div class="seat ${statusClass}" 
-                 id="seat-${seat.numero_siege}"
-                 data-seat="${seat.numero_siege}"
-                 data-status="${status}"
-                 ${clickHandler}
-                 title="Siège ${seat.numero_siege} - ${status}">
-                ${seat.numero_siege}
-                ${!isClickable ? '<span class="passenger-tag">✕</span>' : ''}
-            </div>
-        `;
+    const seatsGrid = document.getElementById('seatsGrid');
+    
+    // Grouper par rangée
+    const rows = {};
+    seats.forEach(seat => {
+        const match = seat.numero_siege.match(/^([A-Z]+)/);
+        const row = match ? match[1] : 'A';
+        if (!rows[row]) rows[row] = [];
+        rows[row].push(seat);
     });
     
-    container.innerHTML = seatsHTML;
-    updateSummary();
+    // Trier les rangées
+    const sortedRows = Object.keys(rows).sort();
     
-    console.log('✅ Sièges générés avec succès');
+    // Générer les sièges
+    sortedRows.forEach(rowLetter => {
+        const rowSeats = rows[rowLetter];
+        
+        // Trier par numéro
+        rowSeats.sort((a, b) => {
+            const numA = parseInt(a.numero_siege.replace(/[A-Z]+/, ''));
+            const numB = parseInt(b.numero_siege.replace(/[A-Z]+/, ''));
+            return numA - numB;
+        });
+        
+        // 2 sièges gauche
+        for (let i = 0; i < Math.min(2, rowSeats.length); i++) {
+            seatsGrid.innerHTML += createSeatHTML(rowSeats[i]);
+        }
+        
+        // Allée si on a des sièges à droite
+        if (rowSeats.length > 2) {
+            seatsGrid.innerHTML += '<div class="aisle">ALLÉE</div>';
+            
+            // 2 sièges droite
+            for (let i = 2; i < Math.min(4, rowSeats.length); i++) {
+                seatsGrid.innerHTML += createSeatHTML(rowSeats[i]);
+            }
+        }
+    });
+    
+    updateSummary();
 }
 
-// Fonction pour obtenir la classe CSS (fallback)
+function createSeatHTML(seat) {
+    const status = (seat.statut || '').toLowerCase();
+    let cssClass = 'seat available';
+    let clickable = 'onclick="toggleSeat(this, \'' + seat.numero_siege + '\')"';
+    
+    if (status === 'reserve' || status === 'réservé') {
+        cssClass = 'seat reserved';
+        clickable = '';
+    } else if (status === 'bloque' || status === 'bloqué') {
+        cssClass = 'seat blocked';
+        clickable = '';
+    }
+    
+    return `
+        <div class="${cssClass}" 
+             data-seat="${seat.numero_siege}"
+             data-status="${status}"
+             ${clickable}
+             title="Siège ${seat.numero_siege}">
+            ${seat.numero_siege}
+        </div>
+    `;
+}
+
+// Créer un élément siège
+function createSeatElement(seat) {
+    const status = (seat.statut || 'disponible').toLowerCase().trim();
+    let statusClass = 'available';
+    let isClickable = true;
+    
+    switch(status) {
+        case 'reserve':
+        case 'réservé':
+            statusClass = 'reserved';
+            isClickable = false;
+            break;
+        case 'bloque':
+        case 'bloqué':
+            statusClass = 'blocked';
+            isClickable = false;
+            break;
+        case 'disponible':
+        default:
+            statusClass = 'available';
+            isClickable = true;
+            break;
+    }
+    
+    const clickHandler = isClickable 
+        ? `onclick="toggleSeat(this, '${seat.numero_siege}')"` 
+        : '';
+    
+    const title = isClickable 
+        ? `Siège ${seat.numero_siege} - Disponible` 
+        : `Siège ${seat.numero_siege} - ${status}`;
+    
+    return `
+        <div class="seat ${statusClass}" 
+             id="seat-${seat.numero_siege}"
+             data-seat="${seat.numero_siege}"
+             data-status="${status}"
+             ${clickHandler}
+             title="${title}">
+            ${seat.numero_siege}
+        </div>
+    `;
+}
+
+// Fonction pour obtenir la classe CSS (gardée pour compatibilité)
 function getStatusClass(status) {
     if (!status) return 'available';
     
