@@ -3,7 +3,7 @@
 // const API_URL = isLocalhost ? 'http://localhost:3000/api' : '/api';
 const API_URL = window.location.origin + '/api';
 
-console.log('🌍 Environnement:', isLocalhost ? 'local' : 'production');
+console.log('🌍 Environnement:', API_URL ? 'local' : 'production');
 console.log('🔗 API URL:', API_URL);
 
 // Gestion du formulaire de recherche
