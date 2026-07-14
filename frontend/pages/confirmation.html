@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,41 +12,57 @@
         .confirmation-card {
             border: 3px solid #28a745;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
+
         .success-icon {
             font-size: 80px;
             color: #28a745;
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
+
         .booking-reference {
             font-size: 2rem;
             font-weight: bold;
             color: #28a745;
             letter-spacing: 2px;
         }
+
         .detail-row {
             display: flex;
             justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px solid #e9ecef;
         }
+
         .detail-row:last-child {
             border-bottom: none;
         }
+
         .detail-label {
             font-weight: 600;
             color: #495057;
         }
+
         .detail-value {
             color: #212529;
             text-align: right;
         }
+
         .barcode {
             font-family: 'Courier New', monospace;
             font-size: 12px;
@@ -55,6 +72,7 @@
             border-radius: 5px;
             text-align: center;
         }
+
         .ticket {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -62,6 +80,7 @@
             border-radius: 10px;
             margin-top: 20px;
         }
+
         .seat-badge {
             display: inline-block;
             background: #007bff;
@@ -71,14 +90,17 @@
             border-radius: 8px;
             font-weight: bold;
         }
+
         @media print {
             .no-print {
                 display: none !important;
             }
+
             .confirmation-card {
                 border: 2px solid #000;
                 box-shadow: none;
             }
+
             body {
                 padding: 0;
                 margin: 0;
@@ -86,6 +108,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary no-print">
@@ -108,7 +131,7 @@
     <div class="container mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                
+
                 <!-- Loading -->
                 <div id="loadingSpinner" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
@@ -119,7 +142,7 @@
 
                 <!-- Contenu de la confirmation -->
                 <div id="confirmationContent" style="display: none;">
-                    
+
                     <!-- Carte de confirmation -->
                     <div class="card confirmation-card mb-4">
                         <div class="card-body text-center p-5">
@@ -128,7 +151,7 @@
                             </div>
                             <h2 class="text-success mb-3">Réservation Confirmée !</h2>
                             <p class="lead mb-4">Votre voyage a été réservé avec succès</p>
-                            
+
                             <div class="alert alert-success">
                                 <small>Numéro de réservation</small>
                                 <div class="booking-reference" id="bookingRef">---</div>
@@ -256,6 +279,24 @@
                         <small>Présentez ce billet à l'embarquement</small>
                     </div>
 
+                    <!-- Section Paiement -->
+                    <div class="card mb-4" id="paymentSection">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0">
+                                <i class="fas fa-credit-card"></i> Paiement
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div id="paymentStatus">
+                                <p class="text-muted">Paiement en attente</p>
+                                <button class="btn btn-warning btn-lg" onclick="processPayment()">
+                                    <i class="fas fa-lock"></i> Payer maintenant
+                                </button>
+                            </div>
+                            <div id="paymentResult" style="display: none;"></div>
+                        </div>
+                    </div>
+
                     <!-- Boutons d'action -->
                     <div class="text-center mt-4 no-print">
                         <button class="btn btn-primary btn-lg me-3" onclick="window.print()">
@@ -288,4 +329,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/confirmation.js"></script>
 </body>
+
 </html>

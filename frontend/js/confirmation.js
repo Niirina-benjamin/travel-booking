@@ -199,3 +199,66 @@ function shareViaWhatsApp() {
 console.log('🔍 Vérification localStorage:');
 console.log('  Token:', token ? 'Présent' : 'Absent');
 console.log('  lastBooking:', localStorage.getItem('lastBooking'));
+
+// Fonction de paiement
+async function processPayment() {
+    if (!bookingData) return;
+    
+    const paymentButton = document.querySelector('#paymentStatus button');
+    paymentButton.disabled = true;
+    paymentButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement en cours...';
+    
+    try {
+        const response = await fetch(`${API_URL}/payments/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                bookingId: bookingData.bookingId,
+                amount: bookingData.totalPrice || (bookingData.tripDetails.prix * bookingData.seats.length),
+                paymentMethod: 'carte_bancaire'
+            })
+        });
+        
+        const result = await response.json();
+        
+        document.getElementById('paymentStatus').style.display = 'none';
+        document.getElementById('paymentResult').style.display = 'block';
+        
+        if (result.success) {
+            document.getElementById('paymentResult').innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle fa-3x"></i>
+                    <h4 class="mt-2">✅ Paiement réussi !</h4>
+                    <p>Transaction : ${result.transaction.id}</p>
+                    <p>Carte : ${result.transaction.cardLast4}</p>
+                    <p class="small text-muted">${new Date(result.transaction.timestamp).toLocaleString()}</p>
+                </div>
+            `;
+            
+            // Mettre à jour le statut de la réservation
+            localStorage.setItem('lastBooking', JSON.stringify({
+                ...bookingData,
+                paymentStatus: 'paid',
+                transaction: result.transaction
+            }));
+            
+        } else {
+            document.getElementById('paymentResult').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle fa-3x"></i>
+                    <h4 class="mt-2">❌ Paiement échoué</h4>
+                    <p>Veuillez réessayer</p>
+                    <button class="btn btn-warning mt-2" onclick="processPayment()">
+                        Réessayer
+                    </button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Erreur paiement:', error);
+        alert('Erreur lors du paiement');
+    }
+}

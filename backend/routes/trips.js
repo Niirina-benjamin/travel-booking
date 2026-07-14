@@ -61,4 +61,57 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Recherche avancée
+router.get('/search/advanced', async (req, res) => {
+    try {
+        const { depart, destination, date_min, date_max, prix_min, prix_max, places_min } = req.query;
+        
+        let query = `
+            SELECT t.*, v.type as type_vehicule, v.modele as modele_vehicule,
+                   (SELECT ROUND(AVG(rating), 1) FROM reviews WHERE trip_id = t.id) as avg_rating,
+                   (SELECT COUNT(*) FROM reviews WHERE trip_id = t.id) as review_count
+            FROM trips t 
+            JOIN vehicles v ON t.vehicule_id = v.id 
+            WHERE t.statut = 'programme'
+        `;
+        const params = [];
+        
+        if (depart) {
+            query += ' AND t.depart LIKE ?';
+            params.push(`%${depart}%`);
+        }
+        if (destination) {
+            query += ' AND t.destination LIKE ?';
+            params.push(`%${destination}%`);
+        }
+        if (date_min) {
+            query += ' AND t.date_depart >= ?';
+            params.push(date_min);
+        }
+        if (date_max) {
+            query += ' AND t.date_depart <= ?';
+            params.push(date_max);
+        }
+        if (prix_min) {
+            query += ' AND t.prix >= ?';
+            params.push(prix_min);
+        }
+        if (prix_max) {
+            query += ' AND t.prix <= ?';
+            params.push(prix_max);
+        }
+        if (places_min) {
+            query += ' AND t.places_disponibles >= ?';
+            params.push(places_min);
+        }
+        
+        query += ' ORDER BY t.date_depart ASC';
+        
+        const [trips] = await db.query(query, params);
+        res.json(trips);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

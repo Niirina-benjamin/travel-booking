@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Paiement - TravelBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>🧪 Test de Paiement</h2>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label>ID Réservation</label>
+                        <input type="number" class="form-control" id="bookingId" value="1">
+                    </div>
+                    <div class="mb-3">
+                        <label>Montant (€)</label>
+                        <input type="number" class="form-control" id="amount" value="77.00" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label>Méthode de paiement</label>
+                        <select class="form-select" id="paymentMethod">
+                            <option value="carte_bancaire">Carte Bancaire</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="virement">Virement</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">💳 Payer</button>
+                </form>
+                
+                <div id="paymentResult" class="mt-4"></div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>Historique des transactions</h5>
+                <button class="btn btn-info" onclick="loadHistory()">🔄 Actualiser</button>
+                <div id="historyResult" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = window.location.origin + '/api';
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            alert('Veuillez vous connecter d\'abord');
+            window.location.href = '/login.html';
+        }
+        
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                bookingId: document.getElementById('bookingId').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                paymentMethod: document.getElementById('paymentMethod').value
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/payments/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('paymentResult').innerHTML = `
+                    <div class="alert alert-${result.success ? 'success' : 'danger'}">
+                        <h5>${result.success ? '✅ Paiement réussi !' : '❌ Paiement échoué'}</h5>
+                        <pre>${JSON.stringify(result.transaction, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        });
+        
+        async function loadHistory() {
+            const response = await fetch(`${API_URL}/payments/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const transactions = await response.json();
+            
+            document.getElementById('historyResult').innerHTML = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Réservation</th>
+                            <th>Montant</th>
+                            <th>Méthode</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${transactions.map(t => `
+                            <tr>
+                                <td>${t.id}</td>
+                                <td>#${t.bookingId}</td>
+                                <td>${t.amount}€</td>
+                                <td>${t.method}</td>
+                                <td><span class="badge bg-${t.status === 'completed' ? 'success' : 'danger'}">${t.status}</span></td>
+                                <td>${new Date(t.timestamp).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        loadHistory();
+    </script>
+</body>
+</html>
