@@ -13,105 +13,101 @@ let bookingData = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Page de confirmation chargée');
     
-    // Récupérer les données de réservation
+    // Récupérer les données du localStorage
     const storedBooking = localStorage.getItem('lastBooking');
+    console.log('📦 Données localStorage:', storedBooking);
     
     if (storedBooking) {
-        bookingData = JSON.parse(storedBooking);
-        console.log('✅ Données de réservation trouvées:', bookingData);
-        displayConfirmation();
-    } else {
-        // Essayer de récupérer depuis l'URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const bookingId = urlParams.get('booking');
-        
-        if (bookingId && token) {
-            loadBookingFromAPI(bookingId);
-        } else {
+        try {
+            bookingData = JSON.parse(storedBooking);
+            console.log('✅ Données parsées:', bookingData);
+            
+            // Vérifier que les données essentielles sont présentes
+            if (bookingData.tripDetails && bookingData.bookingId) {
+                displayConfirmation();
+            } else {
+                console.error('❌ Données incomplètes:', bookingData);
+                showNoBookingFound();
+            }
+        } catch (error) {
+            console.error('❌ Erreur parsing JSON:', error);
             showNoBookingFound();
         }
+    } else {
+        console.log('⚠️ Aucune réservation dans localStorage');
+        showNoBookingFound();
     }
 });
 
-// Charger la réservation depuis l'API
-async function loadBookingFromAPI(bookingId) {
+// Afficher la confirmation
+function displayConfirmation() {
+    console.log('📊 Affichage des détails de la confirmation...');
+    
+    // Cacher le loader, afficher le contenu
+    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    if (confirmationContent) confirmationContent.style.display = 'block';
+    
     try {
-        console.log('📡 Chargement réservation #' + bookingId);
+        // 1. Numéro de réservation
+        document.getElementById('bookingRef').textContent = '#' + bookingData.bookingId;
         
-        const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        // 2. Détails du voyage
+        document.getElementById('departValue').textContent = bookingData.tripDetails.depart || '---';
+        document.getElementById('destinationValue').textContent = bookingData.tripDetails.destination || '---';
+        document.getElementById('dateDepartValue').textContent = formatDate(bookingData.tripDetails.date_depart);
+        document.getElementById('dateArriveeValue').textContent = formatDate(bookingData.tripDetails.date_arrivee);
+        
+        // 3. Sièges
+        const seats = bookingData.seats || [];
+        displaySeats(seats);
+        document.getElementById('nbPassagers').textContent = seats.length;
+        
+        // 4. CALCULS DES PRIX
+        const prixUnitaire = parseFloat(bookingData.tripDetails.prix) || 0;
+        const nbSieges = seats.length;
+        const sousTotal = prixUnitaire * nbSieges;
+        const taxes = sousTotal * 0.1;
+        const total = sousTotal + taxes;
+        
+        console.log('💰 Détail des prix:', {
+            'Prix unitaire': prixUnitaire + '€',
+            'Nombre sièges': nbSieges,
+            'Sous-total': sousTotal + '€',
+            'Taxes (10%)': taxes + '€',
+            'Total': total + '€'
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            bookingData = {
-                bookingId: data.id,
-                tripDetails: data,
-                seats: data.seats ? data.seats.split(',') : [],
-                totalPrice: data.prix_total
-            };
-            displayConfirmation();
-        } else {
-            showNoBookingFound();
-        }
+        // Afficher les prix
+        document.getElementById('prixUnitaire').textContent = prixUnitaire.toFixed(2) + ' €';
+        document.getElementById('nbSieges').textContent = nbSieges;
+        document.getElementById('sousTotal').textContent = sousTotal.toFixed(2) + ' €';
+        document.getElementById('taxes').textContent = taxes.toFixed(2) + ' €';
+        document.getElementById('totalValue').textContent = total.toFixed(2) + ' €';
+        
+        // 5. Code-barres
+        generateBarcode(bookingData.bookingId);
+        
+        console.log('✅ Confirmation affichée avec succès');
+        
     } catch (error) {
-        console.error('❌ Erreur:', error);
+        console.error('❌ Erreur lors de l\'affichage:', error);
         showNoBookingFound();
     }
 }
 
-// Afficher la confirmation
-function displayConfirmation() {
-    // Masquer le loader
-    loadingSpinner.style.display = 'none';
-    confirmationContent.style.display = 'block';
-    
-    // Remplir les informations
-    document.getElementById('bookingRef').textContent = '#' + bookingData.bookingId;
-    document.getElementById('departValue').textContent = bookingData.tripDetails.depart;
-    document.getElementById('destinationValue').textContent = bookingData.tripDetails.destination;
-    document.getElementById('dateDepartValue').textContent = formatDate(bookingData.tripDetails.date_depart);
-    document.getElementById('dateArriveeValue').textContent = formatDate(bookingData.tripDetails.date_arrivee);
-    
-    // Afficher les sièges
-    displaySeats(bookingData.seats);
-    
-    // Nombre de passagers
-    document.getElementById('nbPassagers').textContent = bookingData.seats.length;
-    
-    // Calculs financiers
-    const prixUnitaire = bookingData.tripDetails.prix || 0;
-    const nbSieges = bookingData.seats.length;
-    const sousTotal = prixUnitaire * nbSieges;
-    const taxes = sousTotal * 0.1; // 10% de taxes
-    const total = sousTotal + taxes;
-    
-    document.getElementById('prixUnitaire').textContent = prixUnitaire.toFixed(2) + ' €';
-    document.getElementById('nbSieges').textContent = nbSieges;
-    document.getElementById('sousTotal').textContent = sousTotal.toFixed(2) + ' €';
-    document.getElementById('taxes').textContent = taxes.toFixed(2) + ' €';
-    document.getElementById('totalValue').textContent = total.toFixed(2) + ' €';
-    
-    // Générer un code-barres unique
-    generateBarcode(bookingData.bookingId);
-    
-    console.log('✅ Confirmation affichée avec succès');
-}
-
 // Afficher les sièges
 function displaySeats(seats) {
-    const seatsDisplay = document.getElementById('seatsDisplay');
+    const container = document.getElementById('seatsDisplay');
+    if (!container) return;
     
     if (!seats || seats.length === 0) {
-        seatsDisplay.innerHTML = '<p class="text-muted">Aucun siège spécifié</p>';
+        container.innerHTML = '<p class="text-muted">Aucun siège spécifié</p>';
         return;
     }
     
-    seatsDisplay.innerHTML = seats.map(seat => 
-        `<span class="seat-badge">
-            <i class="fas fa-chair"></i> ${seat}
+    container.innerHTML = seats.map(seat => 
+        `<span class="badge bg-primary m-2 p-3" style="font-size: 1.1rem;">
+            <i class="fas fa-chair"></i> Siège ${seat}
         </span>`
     ).join('');
 }
@@ -120,91 +116,86 @@ function displaySeats(seats) {
 function formatDate(dateString) {
     if (!dateString) return '---';
     
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    
-    return new Date(dateString).toLocaleDateString('fr-FR', options);
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return dateString;
+    }
 }
 
-// Générer un code-barres
+// Générer un code-barres simple
 function generateBarcode(bookingId) {
-    const barcodeValue = document.getElementById('barcodeValue');
-    if (!barcodeValue) return;
+    const barcodeElement = document.getElementById('barcodeValue');
+    if (!barcodeElement) return;
     
-    // Créer un code-barres simple basé sur l'ID de réservation
-    const idStr = bookingId.toString();
+    const idStr = String(bookingId || '0');
     let barcode = '';
     
     for (let i = 0; i < idStr.length; i++) {
-        const digit = parseInt(idStr[i]);
+        const digit = parseInt(idStr[i]) || 0;
         barcode += '|'.repeat(digit + 1) + ' ';
     }
     
-    barcodeValue.textContent = barcode;
+    barcodeElement.textContent = barcode || '|| ||| || || ||||';
 }
 
-// Afficher un message si pas de réservation trouvée
+// Message si pas de réservation
 function showNoBookingFound() {
-    loadingSpinner.style.display = 'none';
-    confirmationContent.style.display = 'block';
+    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    if (confirmationContent) confirmationContent.style.display = 'block';
     
-    confirmationContent.innerHTML = `
-        <div class="card confirmation-card">
-            <div class="card-body text-center p-5">
+    if (confirmationContent) {
+        confirmationContent.innerHTML = `
+            <div class="text-center p-5">
                 <i class="fas fa-exclamation-triangle text-warning" style="font-size: 80px;"></i>
                 <h2 class="mt-3">Aucune réservation trouvée</h2>
-                <p class="text-muted">
-                    Aucune réservation récente n'a été trouvée.
-                    <br>Veuillez effectuer une nouvelle réservation.
-                </p>
+                <p class="text-muted">Effectuez une réservation pour voir la confirmation.</p>
                 <a href="/reservation.html" class="btn btn-primary btn-lg mt-3">
                     <i class="fas fa-ticket-alt"></i> Réserver maintenant
                 </a>
             </div>
-        </div>
-    `;
+        `;
+    }
 }
 
 // Partager par email
 function shareViaEmail() {
     if (!bookingData) return;
     
-    const subject = encodeURIComponent('Confirmation de réservation TravelBook #' + bookingData.bookingId);
-    const body = encodeURIComponent(
-        'Bonjour,\n\n' +
-        'Voici les détails de ma réservation :\n\n' +
-        'Numéro : #' + bookingData.bookingId + '\n' +
-        'Trajet : ' + bookingData.tripDetails.depart + ' → ' + bookingData.tripDetails.destination + '\n' +
-        'Date : ' + formatDate(bookingData.tripDetails.date_depart) + '\n' +
-        'Sièges : ' + bookingData.seats.join(', ') + '\n' +
-        'Prix total : ' + bookingData.totalPrice + '€\n\n' +
-        'Merci !'
-    );
+    const subject = 'Confirmation TravelBook #' + bookingData.bookingId;
+    const body = `Bonjour,%0D%0A%0D%0A` +
+        `Réservation #${bookingData.bookingId}%0D%0A` +
+        `Trajet : ${bookingData.tripDetails.depart} → ${bookingData.tripDetails.destination}%0D%0A` +
+        `Date : ${formatDate(bookingData.tripDetails.date_depart)}%0D%0A` +
+        `Sièges : ${(bookingData.seats || []).join(', ')}%0D%0A` +
+        `Prix : ${bookingData.totalPrice || '0'}€`;
     
-    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
 }
 
 // Partager via WhatsApp
 function shareViaWhatsApp() {
     if (!bookingData) return;
     
-    const text = encodeURIComponent(
-        '🎫 Réservation confirmée !\n' +
-        'Numéro : #' + bookingData.bookingId + '\n' +
-        'Trajet : ' + bookingData.tripDetails.depart + ' → ' + bookingData.tripDetails.destination + '\n' +
-        'Date : ' + formatDate(bookingData.tripDetails.date_depart) + '\n' +
-        'Sièges : ' + bookingData.seats.join(', ') + '\n' +
-        'Prix : ' + bookingData.totalPrice + '€'
-    );
+    const text = `🎫 *Réservation confirmée !*%0A%0A` +
+        `Numéro : #${bookingData.bookingId}%0A` +
+        `Trajet : ${bookingData.tripDetails.depart} → ${bookingData.tripDetails.destination}%0A` +
+        `Date : ${formatDate(bookingData.tripDetails.date_depart)}%0A` +
+        `Sièges : ${(bookingData.seats || []).join(', ')}%0A` +
+        `Prix : ${bookingData.totalPrice || '0'}€`;
     
     window.open('https://wa.me/?text=' + text, '_blank');
 }
 
-// Animation de chargement
-console.log('📄 Page de confirmation prête');
+// Debug dans la console
+console.log('🔍 Vérification localStorage:');
+console.log('  Token:', token ? 'Présent' : 'Absent');
+console.log('  lastBooking:', localStorage.getItem('lastBooking'));
