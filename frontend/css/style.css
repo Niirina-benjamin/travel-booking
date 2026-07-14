@@ -1,0 +1,32 @@
+/* Styles d'impression */
+@media print {
+    body {
+        background: white !important;
+        padding: 0 !important;
+    }
+    
+    .navbar, .no-print, .btn {
+        display: none !important;
+    }
+    
+    .confirmation-card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .ticket {
+        background: #f8f9fa !important;
+        color: black !important;
+        border: 1px dashed #000 !important;
+    }
+    
+    @page {
+        margin: 1cm;
+    }
+}
