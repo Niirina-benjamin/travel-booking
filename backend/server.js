@@ -9,6 +9,11 @@ const tripRoutes = require('./routes/trips');
 const bookingRoutes = require('./routes/bookings');
 const adminRoutes = require('./routes/admin');
 
+const paymentRoutes = require('./routes/payments');
+const reviewRoutes = require('./routes/reviews');
+const exportRoutes = require('./routes/exports');
+const profileRoutes = require('./routes/profile');
+
 const app = express();
 
 // Middleware
@@ -95,6 +100,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
+
+app.use('/api/payments', paymentRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/exports', exportRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Fonction helper pour envoyer des fichiers HTML
 function sendHtmlFile(res, relativePath) {
