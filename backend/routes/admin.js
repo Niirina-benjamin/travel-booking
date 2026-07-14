@@ -3,14 +3,16 @@ const router = express.Router();
 const db = require('../config/database');
 const { authenticateToken, isAdmin } = require('../middleware/auth');
 
-// Dashboard - Statistiques
+// Dashboard stats
 router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const [userCount] = await db.query('SELECT COUNT(*) as total FROM users');
-        const [tripCount] = await db.query('SELECT COUNT(*) as total FROM trips');
-        const [bookingCount] = await db.query('SELECT COUNT(*) as total FROM bookings');
+        const [[{total: users}]] = await db.query('SELECT COUNT(*) as total FROM users');
+        const [[{total: trips}]] = await db.query('SELECT COUNT(*) as total FROM trips');
+        const [[{total: bookings}]] = await db.query('SELECT COUNT(*) as total FROM bookings');
+        const [[{total: vehicles}]] = await db.query('SELECT COUNT(*) as total FROM vehicles');
+        
         const [recentBookings] = await db.query(`
-            SELECT b.*, u.nom, u.email, t.depart, t.destination 
+            SELECT b.*, u.nom, u.email, t.depart, t.destination, t.date_depart
             FROM bookings b 
             JOIN users u ON b.user_id = u.id 
             JOIN trips t ON b.trip_id = t.id 
@@ -19,69 +21,128 @@ router.get('/dashboard', authenticateToken, isAdmin, async (req, res) => {
         `);
         
         res.json({
-            stats: {
-                users: userCount[0].total,
-                trips: tripCount[0].total,
-                bookings: bookingCount[0].total
-            },
+            stats: { users, trips, bookings, vehicles },
             recentBookings
         });
     } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-// Gestion des trajets
+// CRUD Trajets
 router.get('/trips', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const [trips] = await db.query(`
-            SELECT t.*, v.modele, v.immatriculation 
-            FROM trips t 
-            JOIN vehicles v ON t.vehicule_id = v.id
-        `);
-        res.json(trips);
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: error.message });
-    }
+    const [trips] = await db.query(`
+        SELECT t.*, v.modele, v.type as type_vehicule 
+        FROM trips t JOIN vehicles v ON t.vehicule_id = v.id
+        ORDER BY t.date_depart DESC
+    `);
+    res.json(trips);
 });
 
 router.post('/trips', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { depart, destination, date_depart, date_arrivee, prix, vehicule_id } = req.body;
-        
-        // Récupérer la capacité du véhicule
-        const [vehicles] = await db.query('SELECT capacite FROM vehicles WHERE id = ?', [vehicule_id]);
-        const places_disponibles = vehicles[0].capacite;
+        const { depart, destination, date_depart, date_arrivee, prix, vehicule_id, statut } = req.body;
+        const [[{capacite}]] = await db.query('SELECT capacite FROM vehicles WHERE id = ?', [vehicule_id]);
         
         const [result] = await db.query(
-            'INSERT INTO trips (depart, destination, date_depart, date_arrivee, prix, vehicule_id, places_disponibles) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [depart, destination, date_depart, date_arrivee, prix, vehicule_id, places_disponibles]
+            'INSERT INTO trips (depart, destination, date_depart, date_arrivee, prix, vehicule_id, places_disponibles, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [depart, destination, date_depart, date_arrivee, prix, vehicule_id, capacite, statut || 'programme']
         );
         
-        res.status(201).json({ message: 'Trajet créé', id: result.insertId });
+        // Générer les sièges
+        const tripId = result.insertId;
+        for (let i = 1; i <= capacite; i++) {
+            await db.query('INSERT INTO seats (trip_id, numero_siege, statut) VALUES (?, ?, ?)',
+                [tripId, `A${i}`, 'disponible']);
+        }
+        
+        res.status(201).json({ message: 'Trajet créé', id: tripId });
     } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-// Gestion des utilisateurs
+router.put('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { depart, destination, date_depart, date_arrivee, prix, vehicule_id, statut } = req.body;
+        await db.query(
+            'UPDATE trips SET depart=?, destination=?, date_depart=?, date_arrivee=?, prix=?, vehicule_id=?, statut=? WHERE id=?',
+            [depart, destination, date_depart, date_arrivee, prix, vehicule_id, statut, req.params.id]
+        );
+        res.json({ message: 'Trajet mis à jour' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.delete('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
+    await db.query('DELETE FROM trips WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Trajet supprimé' });
+});
+
+// Gestion des réservations (admin)
+router.get('/bookings', authenticateToken, isAdmin, async (req, res) => {
+    const { statut } = req.query;
+    let query = `
+        SELECT b.*, u.nom, u.email, t.depart, t.destination, t.date_depart,
+               GROUP_CONCAT(bs.seat_number) as seats
+        FROM bookings b 
+        JOIN users u ON b.user_id = u.id 
+        JOIN trips t ON b.trip_id = t.id 
+        LEFT JOIN booking_seats bs ON b.id = bs.booking_id
+    `;
+    const params = [];
+    
+    if (statut) {
+        query += ' WHERE b.statut = ?';
+        params.push(statut);
+    }
+    
+    query += ' GROUP BY b.id ORDER BY b.date_reservation DESC';
+    
+    const [bookings] = await db.query(query, params);
+    res.json(bookings);
+});
+
+router.put('/bookings/:id/status', authenticateToken, isAdmin, async (req, res) => {
+    await db.query('UPDATE bookings SET statut = ? WHERE id = ?', 
+        [req.body.statut, req.params.id]);
+    res.json({ message: 'Statut mis à jour' });
+});
+
+// Gestion utilisateurs
 router.get('/users', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const [users] = await db.query('SELECT id, nom, email, telephone, role, created_at FROM users');
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: error.message });
-    }
+    const [users] = await db.query('SELECT id, nom, email, telephone, role, created_at FROM users ORDER BY created_at DESC');
+    res.json(users);
 });
 
-// Gestion des véhicules
+router.put('/users/:id/role', authenticateToken, isAdmin, async (req, res) => {
+    await db.query('UPDATE users SET role = ? WHERE id = ?', [req.body.role, req.params.id]);
+    res.json({ message: 'Rôle mis à jour' });
+});
+
+// CRUD Véhicules
 router.get('/vehicles', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const [vehicles] = await db.query('SELECT * FROM vehicles');
-        res.json(vehicles);
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: error.message });
-    }
+    const [vehicles] = await db.query('SELECT * FROM vehicles ORDER BY id DESC');
+    res.json(vehicles);
+});
+
+router.post('/vehicles', authenticateToken, isAdmin, async (req, res) => {
+    const { type, modele, immatriculation, capacite, statut } = req.body;
+    const [result] = await db.query(
+        'INSERT INTO vehicles (type, modele, immatriculation, capacite, statut) VALUES (?, ?, ?, ?, ?)',
+        [type, modele, immatriculation, capacite, statut || 'actif']
+    );
+    res.status(201).json({ message: 'Véhicule créé', id: result.insertId });
+});
+
+router.put('/vehicles/:id', authenticateToken, isAdmin, async (req, res) => {
+    const { type, modele, immatriculation, capacite, statut } = req.body;
+    await db.query(
+        'UPDATE vehicles SET type=?, modele=?, immatriculation=?, capacite=?, statut=? WHERE id=?',
+        [type, modele, immatriculation, capacite, statut, req.params.id]
+    );
+    res.json({ message: 'Véhicule mis à jour' });
 });
 
 module.exports = router;
