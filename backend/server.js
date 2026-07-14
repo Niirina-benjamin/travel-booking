@@ -134,6 +134,9 @@ app.get('/reservation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/res
 app.get('/seats.html', (req, res) => sendHtmlFile(res, 'frontend/pages/seats.html'));
 app.get('/confirmation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/confirmation.html'));
 app.get('/history.html', (req, res) => sendHtmlFile(res, 'frontend/pages/history.html'));
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/pages/login.html'));
+});
 
 // Route pour le dashboard admin
 app.get('/admin/dashboard.html', (req, res) => sendHtmlFile(res, 'admin/pages/dashboard.html'));

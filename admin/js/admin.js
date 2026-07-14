@@ -1,11 +1,16 @@
 // Configuration
 const API_URL = window.location.origin + '/api';
 const token = localStorage.getItem('token');
+const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
 
-// Vérification admin
-if (!token) {
+// 🔥 Vérification stricte : doit être admin
+if (!token || savedUser.role !== 'admin') {
+    alert('Accès réservé aux administrateurs. Veuillez vous connecter avec un compte admin.');
     window.location.href = '/';
 }
+
+// Afficher le nom de l'admin connecté
+console.log('👑 Admin connecté:', savedUser.nom);
 
 // Vérifier le rôle admin
 async function checkAdmin() {

@@ -1,41 +1,45 @@
-// Configuration de l'API - CORRECTION ICI
-// const API_URL = 'https://travel-booking-ngzk.onrender.com/api';
-const API_URL = window.location.origin + '/api';
+// Configuration de l'API
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api' 
+    : '/api';
 
 // Gestion du token
 let currentUser = null;
 const token = localStorage.getItem('token');
+const savedUser = localStorage.getItem('user');
 
-if (token) {
-    // Vérifier le token et récupérer les infos utilisateur
-    fetch(`${API_URL}/auth/verify`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Token invalide');
-        return response.json();
-    })
-    .then(data => {
-        if (data.user) {
-            currentUser = data.user;
-            updateUI();
-        }
-    })
-    .catch(() => {
-        localStorage.removeItem('token');
-    });
+if (token && savedUser) {
+    currentUser = JSON.parse(savedUser);
+    updateUI();
+    
+    // 🔥 Si on est sur la page d'accueil et qu'on est admin, proposer d'aller au dashboard
+    if (currentUser.role === 'admin' && window.location.pathname === '/' || window.location.pathname === '/index.html') {
+        // Optionnel : rediriger automatiquement
+        // window.location.href = '/admin/dashboard.html';
+        
+        // Ou afficher un bouton dashboard dans la navbar
+        console.log('✅ Admin connecté');
+    }
 }
 
 // Mise à jour de l'interface utilisateur
 function updateUI() {
     if (currentUser) {
-        document.querySelectorAll('.nav-item .nav-link[data-bs-target="#loginModal"]').forEach(el => {
-            el.textContent = currentUser.nom;
-            el.removeAttribute('data-bs-toggle');
-            el.removeAttribute('data-bs-target');
-            el.href = '#';
-            el.addEventListener('click', logout);
-        });
+        // Remplacer le lien connexion par le nom
+        const loginLink = document.querySelector('#loginNavItem .nav-link');
+        if (loginLink) {
+            loginLink.textContent = currentUser.nom;
+            loginLink.removeAttribute('data-bs-toggle');
+            loginLink.removeAttribute('data-bs-target');
+            loginLink.href = '#';
+            loginLink.addEventListener('click', logout);
+        }
+        
+        // 🔥 Afficher le lien dashboard si admin
+        if (currentUser.role === 'admin') {
+            const adminLink = document.getElementById('adminLink');
+            if (adminLink) adminLink.style.display = 'block';
+        }
     }
 }
 
@@ -99,10 +103,18 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         
         if (response.ok) {
             localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
             currentUser = data.user;
             updateUI();
+            
             bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-            window.location.reload();
+            
+            // 🔥 REDIRECTION SELON LE RÔLE
+            if (data.user.role === 'admin') {
+                window.location.href = '/admin/dashboard.html';
+            } else {
+                window.location.href = '/index.html';
+            }
         } else {
             alert(data.message);
         }
