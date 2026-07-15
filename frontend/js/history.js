@@ -1,48 +1,47 @@
 // Configuration
-const API_URL = window.location.origin + '/api';
-const token = localStorage.getItem('token');
+const API_URL = window.location.origin + "/api";
+const token = localStorage.getItem("token");
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 Page historique chargée');
-    
-    if (!token) {
-        alert('Veuillez vous connecter pour voir votre historique');
-        window.location.href = '/';
-        return;
-    }
-    
-    loadBookings();
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("📋 Page historique chargée");
+
+  if (!token) {
+    alert("Veuillez vous connecter pour voir votre historique");
+    window.location.href = "/";
+    return;
+  }
+
+  loadBookings();
 });
 
 // Charger les réservations
 async function loadBookings() {
-    console.log('📡 Chargement des réservations...');
-    
-    try {
-        // Utiliser la route racine des bookings, pas /history
-        const response = await fetch(`${API_URL}/bookings`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        console.log('📡 Réponse API:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-        }
-        
-        const bookings = await response.json();
-        console.log('✅ Réservations trouvées:', bookings.length, bookings);
-        
-        displayBookings(bookings);
-        
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        document.getElementById('bookingsList').innerHTML = `
+  console.log("📡 Chargement des réservations...");
+
+  try {
+    // Utiliser la route racine des bookings, pas /history
+    const response = await fetch(`${API_URL}/bookings`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("📡 Réponse API:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+    }
+
+    const bookings = await response.json();
+    console.log("✅ Réservations trouvées:", bookings.length, bookings);
+
+    displayBookings(bookings);
+  } catch (error) {
+    console.error("❌ Erreur:", error);
+    document.getElementById("bookingsList").innerHTML = `
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-triangle"></i>
                 Erreur lors du chargement de l'historique.
@@ -50,23 +49,25 @@ async function loadBookings() {
                 <br><small>Vérifiez que vous êtes bien connecté.</small>
             </div>
         `;
-    }
+  }
 }
 
 // Afficher les réservations
 function displayBookings(bookings) {
-    const container = document.getElementById('bookingsList');
-    const noBookings = document.getElementById('noBookings');
-    
-    if (!bookings || bookings.length === 0) {
-        if (noBookings) noBookings.style.display = 'block';
-        if (container) container.innerHTML = '';
-        return;
-    }
-    
-    if (noBookings) noBookings.style.display = 'none';
-    
-    container.innerHTML = bookings.map(booking => `
+  const container = document.getElementById("bookingsList");
+  const noBookings = document.getElementById("noBookings");
+
+  if (!bookings || bookings.length === 0) {
+    if (noBookings) noBookings.style.display = "block";
+    if (container) container.innerHTML = "";
+    return;
+  }
+
+  if (noBookings) noBookings.style.display = "none";
+
+  container.innerHTML = bookings
+    .map(
+      (booking) => `
         <div class="card mb-4 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
@@ -74,7 +75,7 @@ function displayBookings(bookings) {
                     Réservation #${booking.id}
                 </h5>
                 <span class="badge ${getStatusBadge(booking.statut)} fs-6">
-                    ${booking.statut || 'En attente'}
+                    ${booking.statut || "En attente"}
                 </span>
             </div>
             <div class="card-body">
@@ -108,14 +109,22 @@ function displayBookings(bookings) {
                         <div class="mb-2">
                             <i class="fas fa-chair text-muted"></i>
                             <strong>Sièges :</strong>
-                            ${booking.seats ? booking.seats.split(',').map(s => 
-                                `<span class="badge bg-primary me-1">${s.trim()}</span>`
-                            ).join('') : '<span class="text-muted">Non spécifié</span>'}
+                            ${
+                              booking.seats
+                                ? booking.seats
+                                    .split(",")
+                                    .map(
+                                      (s) =>
+                                        `<span class="badge bg-primary me-1">${s.trim()}</span>`,
+                                    )
+                                    .join("")
+                                : '<span class="text-muted">Non spécifié</span>'
+                            }
                         </div>
                         
                         <p class="mb-0">
                             <i class="fas fa-users text-muted"></i>
-                            <strong>Passagers :</strong> ${booking.nb_passagers || '1'}
+                            <strong>Passagers :</strong> ${booking.nb_passagers || "1"}
                         </p>
                     </div>
                     
@@ -131,12 +140,17 @@ function displayBookings(bookings) {
                         </p>
                         
                         <div class="mt-3">
-                            ${booking.statut === 'en_attente' || booking.statut === 'confirme' ? `
+                            ${
+                              booking.statut === "en_attente" ||
+                              booking.statut === "confirme"
+                                ? `
                                 <button class="btn btn-outline-danger btn-sm" 
                                         onclick="cancelBooking(${booking.id})">
                                     <i class="fas fa-times"></i> Annuler
                                 </button>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                             <button class="btn btn-outline-primary btn-sm ms-2"
                                     onclick="viewDetails(${booking.id})">
                                 <i class="fas fa-eye"></i> Détails
@@ -146,71 +160,162 @@ function displayBookings(bookings) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `,
+    )
+    .join("");
+  <button
+    class="btn btn-sm btn-warning"
+    onclick="openReviewModal(${booking.trip_id || 1}, ${booking.id})"
+  >
+    <i class="fas fa-star"></i> Noter
+  </button>;
 }
 
 // Formater la date
 function formatDate(dateString) {
-    if (!dateString) return '---';
-    
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } catch (error) {
-        return dateString;
-    }
+  if (!dateString) return "---";
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    return dateString;
+  }
 }
 
 // Obtenir la classe du badge selon le statut
 function getStatusBadge(statut) {
-    switch(statut) {
-        case 'confirme': return 'bg-success';
-        case 'en_attente': return 'bg-warning text-dark';
-        case 'annule': return 'bg-danger';
-        case 'termine': return 'bg-secondary';
-        default: return 'bg-info';
-    }
+  switch (statut) {
+    case "confirme":
+      return "bg-success";
+    case "en_attente":
+      return "bg-warning text-dark";
+    case "annule":
+      return "bg-danger";
+    case "termine":
+      return "bg-secondary";
+    default:
+      return "bg-info";
+  }
 }
 
 // Annuler une réservation
 async function cancelBooking(bookingId) {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
-        return;
+  if (!confirm("Êtes-vous sûr de vouloir annuler cette réservation ?")) {
+    return;
+  }
+
+  try {
+    console.log("🗑️ Annulation réservation #" + bookingId);
+
+    const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("✅ Réservation annulée avec succès");
+      loadBookings(); // Recharger la liste
+    } else {
+      alert(data.message || "Erreur lors de l'annulation");
     }
-    
-    try {
-        console.log('🗑️ Annulation réservation #' + bookingId);
-        
-        const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert('✅ Réservation annulée avec succès');
-            loadBookings(); // Recharger la liste
-        } else {
-            alert(data.message || 'Erreur lors de l\'annulation');
-        }
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        alert('Erreur lors de l\'annulation');
-    }
+  } catch (error) {
+    console.error("❌ Erreur:", error);
+    alert("Erreur lors de l'annulation");
+  }
 }
 
 // Voir les détails d'une réservation
 function viewDetails(bookingId) {
-    window.location.href = `/confirmation.html?booking=${bookingId}`;
+  window.location.href = `/confirmation.html?booking=${bookingId}`;
 }
+
+let currentRating = 0;
+
+// Ouvrir le modal d'avis
+function openReviewModal(tripId, bookingId) {
+  document.getElementById("reviewTripId").value = tripId;
+  document.getElementById("reviewBookingId").value = bookingId;
+  currentRating = 0;
+
+  // Réinitialiser les étoiles
+  document.querySelectorAll("#starRating i").forEach((star) => {
+    star.className = "far fa-star fa-3x text-warning";
+  });
+  document.getElementById("reviewRating").value = 0;
+  document.getElementById("reviewComment").value = "";
+  document.getElementById("ratingText").textContent = "Cliquez sur une étoile";
+
+  new bootstrap.Modal(document.getElementById("reviewModal")).show();
+}
+
+// Sélectionner une note
+function setRating(rating) {
+  currentRating = rating;
+  document.getElementById("reviewRating").value = rating;
+
+  const stars = document.querySelectorAll("#starRating i");
+  stars.forEach((star, index) => {
+    star.className =
+      index < rating
+        ? "fas fa-star fa-3x text-warning"
+        : "far fa-star fa-3x text-warning";
+  });
+
+  const texts = ["", "Très mauvais", "Mauvais", "Moyen", "Bon", "Excellent"];
+  document.getElementById("ratingText").textContent = texts[rating];
+}
+
+// Soumettre l'avis
+document.getElementById("reviewForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (currentRating === 0) {
+    alert("Veuillez sélectionner une note");
+    return;
+  }
+
+  const data = {
+    trip_id: document.getElementById("reviewTripId").value,
+    booking_id: document.getElementById("reviewBookingId").value,
+    rating: currentRating,
+    comment: document.getElementById("reviewComment").value,
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("✅ Avis publié avec succès !");
+      bootstrap.Modal.getInstance(
+        document.getElementById("reviewModal"),
+      ).hide();
+      loadBookings(); // Recharger la liste
+    } else {
+      alert(result.message || "Erreur lors de la publication");
+    }
+  } catch (error) {
+    console.error("Erreur:", error);
+  }
+});
