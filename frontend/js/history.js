@@ -57,6 +57,13 @@ function displayBookings(bookings) {
   const container = document.getElementById("bookingsList");
   const noBookings = document.getElementById("noBookings");
 
+  <button
+    class="btn btn-sm btn-warning"
+    onclick="openReviewModal(${booking.trip_id || 1}, ${booking.id})"
+  >
+    <i class="fas fa-star"></i> Noter
+  </button>;
+
   if (!bookings || bookings.length === 0) {
     if (noBookings) noBookings.style.display = "block";
     if (container) container.innerHTML = "";
@@ -163,12 +170,7 @@ function displayBookings(bookings) {
     `,
     )
     .join("");
-  <button
-    class="btn btn-sm btn-warning"
-    onclick="openReviewModal(${booking.trip_id || 1}, ${booking.id})"
-  >
-    <i class="fas fa-star"></i> Noter
-  </button>;
+  
 }
 
 // Formater la date
