@@ -20,7 +20,6 @@ async function loadBookings() {
   console.log("📡 Chargement des réservations...");
 
   try {
-    // Utiliser la route racine des bookings, pas /history
     const response = await fetch(`${API_URL}/bookings`, {
       method: "GET",
       headers: {
@@ -57,13 +56,6 @@ function displayBookings(bookings) {
   const container = document.getElementById("bookingsList");
   const noBookings = document.getElementById("noBookings");
 
-  <button
-    class="btn btn-sm btn-warning"
-    onclick="openReviewModal(${booking.trip_id || 1}, ${booking.id})"
-  >
-    <i class="fas fa-star"></i> Noter
-  </button>;
-
   if (!bookings || bookings.length === 0) {
     if (noBookings) noBookings.style.display = "block";
     if (container) container.innerHTML = "";
@@ -90,9 +82,9 @@ function displayBookings(bookings) {
                     <div class="col-md-8">
                         <div class="mb-3">
                             <h4 class="text-primary">
-                                ${booking.depart} 
+                                ${booking.depart || '---'} 
                                 <i class="fas fa-arrow-right mx-2"></i> 
-                                ${booking.destination}
+                                ${booking.destination || '---'}
                             </h4>
                         </div>
                         
@@ -122,7 +114,7 @@ function displayBookings(bookings) {
                                     .split(",")
                                     .map(
                                       (s) =>
-                                        `<span class="badge bg-primary me-1">${s.trim()}</span>`,
+                                        `<span class="badge bg-primary me-1">${s.trim()}</span>`
                                     )
                                     .join("")
                                 : '<span class="text-muted">Non spécifié</span>'
@@ -138,7 +130,7 @@ function displayBookings(bookings) {
                     <div class="col-md-4 text-end">
                         <div class="mb-3">
                             <small class="text-muted">Prix total</small>
-                            <h3 class="text-success">${parseFloat(booking.prix_total).toFixed(2)} €</h3>
+                            <h3 class="text-success">${parseFloat(booking.prix_total || 0).toFixed(2)} €</h3>
                         </div>
                         
                         <p class="text-muted small">
@@ -162,15 +154,18 @@ function displayBookings(bookings) {
                                     onclick="viewDetails(${booking.id})">
                                 <i class="fas fa-eye"></i> Détails
                             </button>
+                            <button class="btn btn-outline-warning btn-sm ms-2"
+                                    onclick="openReviewModal(${booking.trip_id || 1}, ${booking.id})">
+                                <i class="fas fa-star"></i> Noter
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    `,
+    `
     )
     .join("");
-  
 }
 
 // Formater la date
@@ -229,7 +224,7 @@ async function cancelBooking(bookingId) {
 
     if (response.ok) {
       alert("✅ Réservation annulée avec succès");
-      loadBookings(); // Recharger la liste
+      loadBookings();
     } else {
       alert(data.message || "Erreur lors de l'annulation");
     }
@@ -244,29 +239,46 @@ function viewDetails(bookingId) {
   window.location.href = `/confirmation.html?booking=${bookingId}`;
 }
 
+// ============ FONCTIONS POUR LES AVIS ============
 let currentRating = 0;
 
 // Ouvrir le modal d'avis
 function openReviewModal(tripId, bookingId) {
-  document.getElementById("reviewTripId").value = tripId;
-  document.getElementById("reviewBookingId").value = bookingId;
+  const tripIdInput = document.getElementById("reviewTripId");
+  const bookingIdInput = document.getElementById("reviewBookingId");
+  
+  if (tripIdInput) tripIdInput.value = tripId;
+  if (bookingIdInput) bookingIdInput.value = bookingId;
+  
   currentRating = 0;
 
   // Réinitialiser les étoiles
-  document.querySelectorAll("#starRating i").forEach((star) => {
+  const stars = document.querySelectorAll("#starRating i");
+  stars.forEach((star) => {
     star.className = "far fa-star fa-3x text-warning";
   });
-  document.getElementById("reviewRating").value = 0;
-  document.getElementById("reviewComment").value = "";
-  document.getElementById("ratingText").textContent = "Cliquez sur une étoile";
+  
+  const ratingInput = document.getElementById("reviewRating");
+  if (ratingInput) ratingInput.value = 0;
+  
+  const commentInput = document.getElementById("reviewComment");
+  if (commentInput) commentInput.value = "";
+  
+  const ratingText = document.getElementById("ratingText");
+  if (ratingText) ratingText.textContent = "Cliquez sur une étoile";
 
-  new bootstrap.Modal(document.getElementById("reviewModal")).show();
+  const reviewModal = document.getElementById("reviewModal");
+  if (reviewModal) {
+    new bootstrap.Modal(reviewModal).show();
+  }
 }
 
 // Sélectionner une note
 function setRating(rating) {
   currentRating = rating;
-  document.getElementById("reviewRating").value = rating;
+  
+  const ratingInput = document.getElementById("reviewRating");
+  if (ratingInput) ratingInput.value = rating;
 
   const stars = document.querySelectorAll("#starRating i");
   stars.forEach((star, index) => {
@@ -277,47 +289,76 @@ function setRating(rating) {
   });
 
   const texts = ["", "Très mauvais", "Mauvais", "Moyen", "Bon", "Excellent"];
-  document.getElementById("ratingText").textContent = texts[rating];
+  const ratingText = document.getElementById("ratingText");
+  if (ratingText) ratingText.textContent = texts[rating];
 }
 
 // Soumettre l'avis
-document.getElementById("reviewForm")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+document.addEventListener("DOMContentLoaded", function() {
+  const reviewForm = document.getElementById("reviewForm");
+  if (reviewForm) {
+    reviewForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  if (currentRating === 0) {
-    alert("Veuillez sélectionner une note");
-    return;
-  }
+      if (currentRating === 0) {
+        alert("Veuillez sélectionner une note");
+        return;
+      }
 
-  const data = {
-    trip_id: document.getElementById("reviewTripId").value,
-    booking_id: document.getElementById("reviewBookingId").value,
-    rating: currentRating,
-    comment: document.getElementById("reviewComment").value,
-  };
+      const data = {
+        trip_id: document.getElementById("reviewTripId").value,
+        booking_id: document.getElementById("reviewBookingId").value,
+        rating: currentRating,
+        comment: document.getElementById("reviewComment").value,
+      };
 
-  try {
-    const response = await fetch(`${API_URL}/reviews`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
+      try {
+        const response = await fetch(`${API_URL}/reviews`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("✅ Avis publié avec succès !");
+          const reviewModal = document.getElementById("reviewModal");
+          if (reviewModal) {
+            bootstrap.Modal.getInstance(reviewModal).hide();
+          }
+          loadBookings();
+        } else {
+          alert(result.message || "Erreur lors de la publication");
+        }
+      } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la publication de l'avis");
+      }
     });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      alert("✅ Avis publié avec succès !");
-      bootstrap.Modal.getInstance(
-        document.getElementById("reviewModal"),
-      ).hide();
-      loadBookings(); // Recharger la liste
-    } else {
-      alert(result.message || "Erreur lors de la publication");
-    }
-  } catch (error) {
-    console.error("Erreur:", error);
   }
 });
+
+// Exporter en CSV
+async function exportCSV() {
+  try {
+    const response = await fetch(`${API_URL}/exports/bookings/csv`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mes_reservations.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Erreur export:", error);
+    alert("Erreur lors de l'export");
+  }
+}
