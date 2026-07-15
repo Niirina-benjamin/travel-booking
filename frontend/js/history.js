@@ -4,15 +4,65 @@ const token = localStorage.getItem("token");
 
 // Initialisation
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("📋 Page historique chargée");
+    console.log("📋 Page historique chargée");
 
-  if (!token) {
-    alert("Veuillez vous connecter pour voir votre historique");
-    window.location.href = "/";
-    return;
-  }
+    if (!token) {
+        alert("Veuillez vous connecter pour voir votre historique");
+        window.location.href = "/";
+        return;
+    }
 
-  loadBookings();
+    // Initialiser les événements des étoiles
+    initStarEvents();
+
+    // Gérer la soumission du formulaire d'avis
+    const reviewForm = document.getElementById("reviewForm");
+    if (reviewForm) {
+        reviewForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            if (currentRating === 0) {
+                alert("Veuillez sélectionner une note en cliquant sur une étoile");
+                return;
+            }
+
+            const tripId = document.getElementById("reviewTripId").value;
+            const bookingId = document.getElementById("reviewBookingId").value;
+            const comment = document.getElementById("reviewComment").value;
+
+            try {
+                const response = await fetch(`${API_URL}/reviews`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        trip_id: tripId,
+                        booking_id: bookingId,
+                        rating: currentRating,
+                        comment: comment,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("✅ Avis publié avec succès !");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("reviewModal"));
+                    if (modal) modal.hide();
+                    loadBookings();
+                } else {
+                    alert(result.message || "Erreur lors de la publication");
+                }
+            } catch (error) {
+                console.error("Erreur:", error);
+                alert("Erreur lors de la publication de l'avis");
+            }
+        });
+    }
+
+    loadBookings();
 });
 
 // Charger les réservations
@@ -361,4 +411,64 @@ async function exportCSV() {
     console.error("Erreur export:", error);
     alert("Erreur lors de l'export");
   }
+}
+
+// Initialiser les événements des étoiles
+function initStarEvents() {
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star) => {
+        star.addEventListener("click", function() {
+            const rating = parseInt(this.getAttribute("data-rating"));
+            setRating(rating);
+        });
+        
+        // Effet hover
+        star.addEventListener("mouseenter", function() {
+            const rating = parseInt(this.getAttribute("data-rating"));
+            highlightStars(rating);
+        });
+        
+        star.addEventListener("mouseleave", function() {
+            highlightStars(currentRating);
+        });
+    });
+}
+
+// Surligner les étoiles
+function highlightStars(rating) {
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.className = "fas fa-star fa-3x text-warning";
+        } else {
+            star.className = "far fa-star fa-3x text-warning";
+        }
+    });
+}
+
+// Ouvrir le modal d'avis
+function openReviewModal(tripId, bookingId) {
+    document.getElementById("reviewTripId").value = tripId;
+    document.getElementById("reviewBookingId").value = bookingId;
+    currentRating = 0;
+    
+    // Réinitialiser les étoiles
+    highlightStars(0);
+    document.getElementById("reviewRating").value = 0;
+    document.getElementById("reviewComment").value = "";
+    document.getElementById("ratingText").textContent = "Cliquez sur une étoile pour noter";
+    
+    // Afficher le modal
+    const reviewModal = new bootstrap.Modal(document.getElementById("reviewModal"));
+    reviewModal.show();
+}
+
+// Sélectionner une note
+function setRating(rating) {
+    currentRating = rating;
+    document.getElementById("reviewRating").value = rating;
+    highlightStars(rating);
+    
+    const texts = ["", "Très mauvais 😡", "Mauvais 😟", "Moyen 😐", "Bon 😊", "Excellent 🤩"];
+    document.getElementById("ratingText").textContent = texts[rating];
 }
