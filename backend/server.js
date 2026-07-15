@@ -147,6 +147,10 @@ app.get('/history.html', (req, res) => sendHtmlFile(res, 'frontend/pages/history
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/pages/login.html'));
 });
+// Ajoutez cette ligne avec les autres routes HTML
+app.get('/profile.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/pages/profile.html'));
+});
 
 // Route pour le dashboard admin
 app.get('/admin/dashboard.html', (req, res) => sendHtmlFile(res, 'admin/pages/dashboard.html'));
