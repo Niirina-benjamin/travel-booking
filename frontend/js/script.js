@@ -25,17 +25,20 @@ if (token && savedUser) {
 // Mise à jour de l'interface utilisateur
 function updateUI() {
     if (currentUser) {
-        // Remplacer le lien connexion par le nom
+        // Remplacer le lien connexion
         const loginLink = document.querySelector('#loginNavItem .nav-link');
         if (loginLink) {
             loginLink.textContent = currentUser.nom;
             loginLink.removeAttribute('data-bs-toggle');
             loginLink.removeAttribute('data-bs-target');
-            loginLink.href = '#';
-            loginLink.addEventListener('click', logout);
+            loginLink.href = '/profile.html';
         }
         
-        // 🔥 Afficher le lien dashboard si admin
+        // 🔥 Afficher le dashboard CLIENT pour tous les utilisateurs connectés
+        const dashboardLink = document.getElementById('dashboardLink');
+        if (dashboardLink) dashboardLink.style.display = 'block';
+        
+        // 🔥 Afficher le lien admin UNIQUEMENT pour les admins
         if (currentUser.role === 'admin') {
             const adminLink = document.getElementById('adminLink');
             if (adminLink) adminLink.style.display = 'block';
