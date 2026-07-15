@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
-
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -29,23 +27,38 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/history.html">Historique</a>
                     </li>
-
-                    <!-- 🔥 Dashboard Client - Visible pour les utilisateurs connectés -->
                     <li class="nav-item" id="dashboardLink" style="display: none;">
                         <a class="nav-link" href="/dashboard.html">
                             <i class="fas fa-chart-pie"></i> Tableau de bord
                         </a>
                     </li>
-
-                    <!-- 🔥 Lien Dashboard Admin - Visible uniquement pour les admins -->
                     <li class="nav-item" id="adminLink" style="display: none;">
                         <a class="nav-link btn btn-warning text-dark px-3" href="/admin/dashboard.html">
                             <i class="fas fa-cogs"></i> Admin
                         </a>
                     </li>
-
+                    <!-- 🔥 Dropdown utilisateur (toujours visible après connexion) -->
+                    <li class="nav-item dropdown" id="userDropdownMenu" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> <span id="userNameDisplay">Compte</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/dashboard.html"><i class="fas fa-chart-pie"></i> Tableau de bord</a></li>
+                            <li><a class="dropdown-item" href="/profile.html"><i class="fas fa-user"></i> Mon profil</a></li>
+                            <li><a class="dropdown-item" href="/history.html"><i class="fas fa-history"></i> Historique</a></li>
+                            <li id="adminDropdownItem" style="display: none;">
+                                <hr class="dropdown-divider">
+                                <a class="dropdown-item text-warning" href="/admin/dashboard.html"><i class="fas fa-cogs"></i> Administration</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                        </ul>
+                    </li>
+                    <!-- Connexion (visible seulement si non connecté) -->
                     <li class="nav-item" id="loginNavItem">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Connexion</a>
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="fas fa-sign-in-alt"></i> Connexion
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -96,9 +109,7 @@
     <section class="trips-section py-5">
         <div class="container">
             <h2 class="mb-4">Trajets disponibles</h2>
-            <div id="tripsList" class="row">
-                <!-- Les trajets seront chargés dynamiquement -->
-            </div>
+            <div id="tripsList" class="row"></div>
         </div>
     </section>
 
@@ -113,18 +124,17 @@
                 <div class="modal-body">
                     <form id="loginForm">
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label class="form-label">Email</label>
                             <input type="email" class="form-control" id="loginEmail" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
+                            <label class="form-label">Mot de passe</label>
                             <input type="password" class="form-control" id="loginPassword" required>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Se connecter</button>
                     </form>
                     <hr>
-                    <p class="text-center">Pas encore de compte ? <a href="#" data-bs-toggle="modal"
-                            data-bs-target="#registerModal" data-bs-dismiss="modal">S'inscrire</a></p>
+                    <p class="text-center">Pas encore de compte ? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">S'inscrire</a></p>
                 </div>
             </div>
         </div>
@@ -141,19 +151,19 @@
                 <div class="modal-body">
                     <form id="registerForm">
                         <div class="mb-3">
-                            <label for="nom" class="form-label">Nom complet</label>
+                            <label class="form-label">Nom complet</label>
                             <input type="text" class="form-control" id="registerNom" required>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label class="form-label">Email</label>
                             <input type="email" class="form-control" id="registerEmail" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
+                            <label class="form-label">Mot de passe</label>
                             <input type="password" class="form-control" id="registerPassword" required>
                         </div>
                         <div class="mb-3">
-                            <label for="telephone" class="form-label">Téléphone</label>
+                            <label class="form-label">Téléphone</label>
                             <input type="tel" class="form-control" id="registerTelephone">
                         </div>
                         <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
@@ -166,5 +176,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/script.js"></script>
 </body>
-
 </html>
