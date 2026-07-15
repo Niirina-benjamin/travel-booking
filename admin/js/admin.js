@@ -62,12 +62,9 @@ function updateDateTime() {
 
 // Navigation entre sections
 function showSection(section) {
-    // Cacher toutes les sections
     document.querySelectorAll('[id$="Section"]').forEach(el => {
         el.style.display = 'none';
     });
-    
-    // Afficher la section demandée
     document.getElementById(section + 'Section').style.display = 'block';
     
     // Mettre à jour le menu actif
@@ -83,6 +80,7 @@ function showSection(section) {
         case 'bookings': loadAllBookings(); break;
         case 'users': loadUsers(); break;
         case 'vehicles': loadVehicles(); break;
+        case 'reviews': loadAllReviews(); break; // ← Ajouter cette ligne
     }
 }
 
@@ -521,4 +519,94 @@ function logout() {
 
 function viewBooking(id) {
     window.open(`/confirmation.html?booking=${id}`, '_blank');
+}
+
+// Charger tous les avis
+async function loadAllReviews() {
+    try {
+        // Récupérer tous les trajets avec leurs avis
+        const [tripsRes, reviewsRes] = await Promise.all([
+            fetch(`${API_URL}/admin/trips`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch(`${API_URL}/admin/all-reviews`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+        
+        const trips = await tripsRes.json();
+        const allReviews = await reviewsRes.json();
+        
+        // Stats
+        const totalReviews = allReviews.length;
+        const avgRating = totalReviews > 0 
+            ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1) 
+            : 0;
+        
+        document.getElementById('reviewsStats').innerHTML = `
+            <div class="col-md-4">
+                <div class="card stat-card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h6>Total avis</h6>
+                        <h2>${totalReviews}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6>Note moyenne</h6>
+                        <h2>${avgRating} ⭐</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6>Trajets notés</h6>
+                        <h2>${new Set(allReviews.map(r => r.trip_id)).size}</h2>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Tableau des avis
+        document.getElementById('reviewsTableBody').innerHTML = allReviews.map(r => `
+            <tr>
+                <td>#${r.id}</td>
+                <td>${r.user_name || 'N/A'}</td>
+                <td>${r.depart || 'N/A'} → ${r.destination || 'N/A'}</td>
+                <td>${'⭐'.repeat(r.rating)} <small>(${r.rating}/5)</small></td>
+                <td>${r.comment ? r.comment.substring(0, 80) + '...' : '<small class="text-muted">Pas de commentaire</small>'}</td>
+                <td>${new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteReview(${r.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Erreur chargement avis:', error);
+    }
+}
+
+// Supprimer un avis
+async function deleteReview(reviewId) {
+    if (!confirm('Supprimer cet avis ?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/reviews/${reviewId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            alert('✅ Avis supprimé');
+            loadAllReviews();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
 }

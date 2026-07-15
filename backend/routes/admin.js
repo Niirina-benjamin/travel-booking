@@ -145,4 +145,48 @@ router.put('/vehicles/:id', authenticateToken, isAdmin, async (req, res) => {
     res.json({ message: 'Véhicule mis à jour' });
 });
 
+// Obtenir tous les avis
+router.get('/all-reviews', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const [reviews] = await db.query(`
+            SELECT r.*, u.nom as user_name, t.depart, t.destination
+            FROM reviews r
+            JOIN users u ON r.user_id = u.id
+            JOIN trips t ON r.trip_id = t.id
+            ORDER BY r.created_at DESC
+        `);
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Supprimer un avis
+router.delete('/reviews/:id', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM reviews WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Avis supprimé' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Statistiques des avis par trajet
+router.get('/reviews/stats', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const [stats] = await db.query(`
+            SELECT t.id, t.depart, t.destination,
+                   COUNT(r.id) as review_count,
+                   ROUND(AVG(r.rating), 1) as avg_rating
+            FROM trips t
+            LEFT JOIN reviews r ON t.id = r.trip_id
+            GROUP BY t.id
+            ORDER BY avg_rating DESC
+        `);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

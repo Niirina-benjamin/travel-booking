@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avis des voyageurs - TravelBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🚌 TravelBook</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Accueil</a>
+                <a class="nav-link" href="/reservation.html">Réservation</a>
+                <a class="nav-link active" href="/reviews.html">Avis</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">⭐ Avis des voyageurs</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <select class="form-select" id="tripFilter" onchange="filterReviews()">
+                    <option value="">Tous les trajets</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="ratingFilter" onchange="filterReviews()">
+                    <option value="">Toutes les notes</option>
+                    <option value="5">5 étoiles</option>
+                    <option value="4">4 étoiles</option>
+                    <option value="3">3 étoiles</option>
+                    <option value="2">2 étoiles</option>
+                    <option value="1">1 étoile</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="reviewsContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mt-3">Chargement des avis...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = window.location.origin + '/api';
+        
+        async function loadAllReviews() {
+            try {
+                // Charger les trajets pour le filtre
+                const tripsRes = await fetch(`${API_URL}/trips`);
+                const trips = await tripsRes.json();
+                
+                const tripFilter = document.getElementById('tripFilter');
+                tripFilter.innerHTML = '<option value="">Tous les trajets</option>' +
+                    trips.map(t => `<option value="${t.id}">${t.depart} → ${t.destination}</option>`).join('');
+                
+                // Charger les avis
+                await filterReviews();
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+        
+        async function filterReviews() {
+            const tripId = document.getElementById('tripFilter').value;
+            const rating = document.getElementById('ratingFilter').value;
+            
+            let url = `${API_URL}/reviews/trip/${tripId || 'all'}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                let reviews = data.reviews || [];
+                
+                // Filtrer par note
+                if (rating) {
+                    reviews = reviews.filter(r => r.rating === parseInt(rating));
+                }
+                
+                const container = document.getElementById('reviewsContainer');
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-star fa-4x text-muted"></i>
+                            <h4 class="mt-3 text-muted">Aucun avis trouvé</h4>
+                        </div>`;
+                    return;
+                }
+                
+                const avgRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
+                
+                container.innerHTML = `
+                    <div class="text-center mb-4">
+                        <h3>Note moyenne : ${avgRating} ⭐</h3>
+                        <p>${reviews.length} avis</p>
+                    </div>
+                    <div class="row">
+                        ${reviews.map(r => `
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6><i class="fas fa-user-circle"></i> ${r.user_name}</h6>
+                                            <span>${'⭐'.repeat(r.rating)}</span>
+                                        </div>
+                                        <p>${r.comment || '<small class="text-muted">Pas de commentaire</small>'}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> ${new Date(r.created_at).toLocaleDateString('fr-FR', {
+                                                year: 'numeric', month: 'long', day: 'numeric'
+                                            })}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`;
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+        
+        loadAllReviews();
+    </script>
+</body>
+</html>
