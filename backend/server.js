@@ -140,11 +140,12 @@ function sendHtmlFile(res, relativePath) {
 // Routes pour les pages HTML
 app.get('/', (req, res) => sendHtmlFile(res, 'frontend/pages/index.html'));
 app.get('/index.html', (req, res) => sendHtmlFile(res, 'frontend/pages/index.html'));
+app.get('/dashboard.html', (req, res) => sendHtmlFile(res, 'frontend/pages/dashboard.html'));
 app.get('/reservation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/reservation.html'));
 app.get('/seats.html', (req, res) => sendHtmlFile(res, 'frontend/pages/seats.html'));
-app.get('/confirmation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/confirmation.html'));
 app.get('/history.html', (req, res) => sendHtmlFile(res, 'frontend/pages/history.html'));
 app.get('/login.html', (req, res) => {
+app.get('/confirmation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/confirmation.html'));
     res.sendFile(path.join(__dirname, '../frontend/pages/login.html'));
 });
 // Ajoutez cette ligne avec les autres routes HTML
