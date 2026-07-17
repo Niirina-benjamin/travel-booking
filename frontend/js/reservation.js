@@ -227,3 +227,179 @@ async function showAllReviews(tripId) {
         console.error('Erreur:', error);
     }
 }
+
+// ==========================================
+// RESERVATION.JS - CORRIGÉ ET COMPLET
+// ==========================================
+
+const API_BASE = typeof API_URL !== 'undefined' ? API_URL : (window.location.origin + '/api');
+const AUTH_TOKEN = typeof token !== 'undefined' ? token : localStorage.getItem('token');
+
+// Charger les villes disponibles au démarrage
+async function loadCities() {
+    try {
+        const response = await fetch(`${API_BASE}/trips/cities`);
+        const cities = await response.json();
+        
+        const departSelect = document.getElementById('depart');
+        const destinationSelect = document.getElementById('destination');
+        
+        const optionsHTML = '<option value="">Choisir une ville...</option>' +
+            cities.map(city => `<option value="${city}">${city}</option>`).join('');
+        
+        if (departSelect) departSelect.innerHTML = optionsHTML;
+        if (destinationSelect) destinationSelect.innerHTML = optionsHTML;
+        
+        console.log('✅ Villes chargées:', cities.length);
+    } catch (error) {
+        console.error('❌ Erreur chargement villes:', error);
+        // Fallback avec les 5 villes de base
+        const fallbackCities = ['Paris', 'Lyon', 'Marseille', 'Nice', 'Bordeaux', 'Lille', 'Toulouse', 'Nantes', 'Strasbourg', 'Montpellier'];
+        const optionsHTML = '<option value="">Choisir une ville...</option>' +
+            fallbackCities.map(city => `<option value="${city}">${city}</option>`).join('');
+        
+        document.getElementById('depart').innerHTML = optionsHTML;
+        document.getElementById('destination').innerHTML = optionsHTML;
+    }
+}
+
+// Charger les villes au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    loadCities();
+});
+
+// Gestion du formulaire de réservation
+document.getElementById('reservationForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const depart = document.getElementById('depart').value;
+    const destination = document.getElementById('destination').value;
+    const date = document.getElementById('date').value;
+    const passagers = document.getElementById('passagers').value;
+    
+    // Filtres avancés
+    const prixMin = document.getElementById('prixMin')?.value;
+    const prixMax = document.getElementById('prixMax')?.value;
+    const placesMin = document.getElementById('placesMin')?.value;
+    const dateMax = document.getElementById('dateMax')?.value;
+    
+    if (!depart || !destination) {
+        alert('Veuillez choisir un lieu de départ et une destination');
+        return;
+    }
+    
+    localStorage.setItem('passagers', passagers || 1);
+    
+    // Vérifier si des filtres avancés sont utilisés
+    const hasAdvancedFilters = prixMin || prixMax || placesMin || dateMax;
+    let url = `${API_BASE}/trips`;
+    if (hasAdvancedFilters) url = `${API_BASE}/trips/search/advanced`;
+    
+    const params = new URLSearchParams();
+    if (depart) params.append('depart', depart);
+    if (destination) params.append('destination', destination);
+    if (date) params.append('date', date);
+    if (prixMin) params.append('prix_min', prixMin);
+    if (prixMax) params.append('prix_max', prixMax);
+    if (placesMin) params.append('places_min', placesMin);
+    if (dateMax) params.append('date_max', dateMax);
+    
+    console.log('🔍 Recherche:', url, params.toString());
+    
+    try {
+        const response = await fetch(`${url}?${params}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const trips = await response.json();
+        displaySearchResults(trips);
+    } catch (error) {
+        console.error('❌ Erreur recherche:', error);
+        alert('Erreur lors de la recherche. Veuillez réessayer.');
+    }
+});
+
+// Afficher les résultats
+function displaySearchResults(trips) {
+    const resultsDiv = document.getElementById('searchResults');
+    const tripsContainer = document.getElementById('availableTrips');
+    if (!resultsDiv || !tripsContainer) return;
+    
+    resultsDiv.style.display = 'block';
+    
+    if (!trips || trips.length === 0) {
+        tripsContainer.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-info text-center py-4 rounded-4">
+                    <i class="fas fa-search fa-2x mb-3"></i>
+                    <h5>Aucun trajet trouvé</h5>
+                    <p class="mb-0">Essayez avec d'autres critères de recherche</p>
+                </div>
+            </div>`;
+        return;
+    }
+    
+    tripsContainer.innerHTML = trips.map(trip => `
+        <div class="col-md-6 mb-4">
+            <div class="trip-card">
+                <div class="trip-card-header">
+                    <div class="trip-route">${trip.depart} → ${trip.destination}</div>
+                    <div class="trip-price-tag">${trip.prix}€</div>
+                </div>
+                <div class="trip-card-body">
+                    <div class="trip-info-item">
+                        <i class="fas fa-calendar-alt"></i> 
+                        <strong>Départ :</strong> ${new Date(trip.date_depart).toLocaleString('fr-FR')}
+                    </div>
+                    <div class="trip-info-item">
+                        <i class="fas fa-calendar-check"></i> 
+                        <strong>Arrivée :</strong> ${new Date(trip.date_arrivee).toLocaleString('fr-FR')}
+                    </div>
+                    <div class="trip-info-item">
+                        <i class="fas fa-bus"></i> 
+                        <strong>Véhicule :</strong> ${trip.modele_vehicule || trip.type_vehicule || 'Bus'}
+                    </div>
+                    <div class="trip-info-item">
+                        <i class="fas fa-chair"></i> 
+                        <strong>Places :</strong> ${trip.places_disponibles} disponibles
+                    </div>
+                    <div class="trip-info-item" id="rating-${trip.id}">
+                        <i class="fas fa-star text-muted"></i> 
+                        <small>Chargement des avis...</small>
+                    </div>
+                    <div class="text-end mt-3">
+                        <a href="/seats.html?trip=${trip.id}" class="btn btn-book">
+                            <i class="fas fa-chair me-2"></i>Choisir les sièges
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    // Charger les notes pour chaque trajet
+    trips.forEach(trip => loadTripRating(trip.id));
+    
+    // Scroll vers les résultats
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Charger la note d'un trajet
+async function loadTripRating(tripId) {
+    try {
+        const response = await fetch(`${API_BASE}/reviews/trip/${tripId}`);
+        const data = await response.json();
+        const ratingDiv = document.getElementById(`rating-${tripId}`);
+        if (!ratingDiv) return;
+        
+        if (!data.reviews || data.reviews.length === 0) {
+            ratingDiv.innerHTML = '<i class="fas fa-star text-muted"></i> <small>Pas encore d\'avis</small>';
+        } else {
+            const stars = '⭐'.repeat(Math.round(data.avg_rating));
+            ratingDiv.innerHTML = `
+                <i class="fas fa-star text-warning"></i> 
+                <strong>${stars} ${data.avg_rating}/5</strong> 
+                <small class="text-muted">(${data.reviews.length} avis)</small>`;
+        }
+    } catch (error) {
+        // Ignorer l'erreur silencieusement
+    }
+}
