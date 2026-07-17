@@ -46,12 +46,41 @@ function updateUI() {
     }
 }
 
+// Mise à jour de la navbar
+function updateNavbar() {
+    const loginNavItem = document.getElementById('loginNavItem');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const adminDropdownItem = document.getElementById('adminDropdownItem');
+    const dashboardLink = document.getElementById('dashboardLink');
+    const adminLink = document.getElementById('adminLink');
+
+    if (currentUser) {
+        if (loginNavItem) loginNavItem.style.display = 'none';
+        if (userDropdownMenu) userDropdownMenu.style.display = 'block';
+        if (userNameDisplay) userNameDisplay.textContent = currentUser.nom;
+        if (dashboardLink) dashboardLink.style.display = 'block';
+        
+        if (currentUser.role === 'admin') {
+            if (adminDropdownItem) adminDropdownItem.style.display = 'block';
+            if (adminLink) adminLink.style.display = 'block';
+        }
+    } else {
+        if (loginNavItem) loginNavItem.style.display = 'block';
+        if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+        if (dashboardLink) dashboardLink.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
+    }
+}
+
 // Déconnexion
 function logout(e) {
     e.preventDefault();
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     currentUser = null;
-    window.location.reload();
+    updateNavbar();
+    window.location.href = '/';
 }
 
 // Gestion de l'inscription

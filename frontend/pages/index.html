@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TravelBook - Réservation de Voyage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary: #6C5CE7;
@@ -16,7 +18,9 @@
             --light: #F8F9FA;
         }
 
-        * { font-family: 'Poppins', sans-serif; }
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
 
         body {
             background: #f0f2f5;
@@ -27,7 +31,7 @@
         .navbar-custom {
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(20px);
-            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.08);
             padding: 15px 0;
             transition: all 0.3s;
         }
@@ -73,7 +77,7 @@
             right: -20%;
             width: 600px;
             height: 600px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             animation: float 20s infinite;
         }
@@ -85,15 +89,25 @@
             left: -10%;
             width: 400px;
             height: 400px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 50%;
             animation: float 15s infinite reverse;
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(30px, -30px) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
         }
 
         .hero-content {
@@ -104,7 +118,7 @@
         .hero-title {
             font-size: 4rem;
             font-weight: 900;
-            text-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             animation: slideInUp 0.8s ease;
         }
 
@@ -115,8 +129,15 @@
         }
 
         @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-btn {
@@ -127,14 +148,14 @@
             border-radius: 50px;
             font-weight: 700;
             font-size: 1.1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             transition: all 0.3s;
             animation: slideInUp 1.2s ease;
         }
 
         .hero-btn:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
             color: var(--primary);
         }
 
@@ -143,8 +164,15 @@
         }
 
         @keyframes floatImage {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-30px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-30px);
+            }
         }
 
         /* Stats Bar */
@@ -155,7 +183,7 @@
             margin-top: -60px;
             position: relative;
             z-index: 10;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .stat-item {
@@ -177,12 +205,12 @@
             background: white;
             border-radius: 20px;
             padding: 35px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
             transition: all 0.3s;
         }
 
         .search-card:hover {
-            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
             transform: translateY(-5px);
         }
 
@@ -232,14 +260,14 @@
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
             transition: all 0.3s;
             border: none;
         }
 
         .trip-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
 
         .trip-card-header {
@@ -310,13 +338,13 @@
             padding: 40px 25px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
             transition: all 0.3s;
         }
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
         }
 
         .feature-icon {
@@ -330,10 +358,25 @@
             margin: 0 auto 20px;
         }
 
-        .icon-1 { background: rgba(108, 92, 231, 0.15); color: var(--primary); }
-        .icon-2 { background: rgba(253, 121, 168, 0.15); color: var(--accent); }
-        .icon-3 { background: rgba(0, 206, 201, 0.15); color: #00cec9; }
-        .icon-4 { background: rgba(253, 203, 110, 0.2); color: #fdcb6e; }
+        .icon-1 {
+            background: rgba(108, 92, 231, 0.15);
+            color: var(--primary);
+        }
+
+        .icon-2 {
+            background: rgba(253, 121, 168, 0.15);
+            color: var(--accent);
+        }
+
+        .icon-3 {
+            background: rgba(0, 206, 201, 0.15);
+            color: #00cec9;
+        }
+
+        .icon-4 {
+            background: rgba(253, 203, 110, 0.2);
+            color: #fdcb6e;
+        }
 
         /* Footer */
         .footer {
@@ -343,7 +386,7 @@
         }
 
         .footer a {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             transition: all 0.3s;
         }
@@ -354,12 +397,22 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .hero-title { font-size: 2.5rem; }
-            .stats-bar { margin-top: -30px; padding: 20px; }
-            .stat-number { font-size: 1.8rem; }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .stats-bar {
+                margin-top: -30px;
+                padding: 20px;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
@@ -379,7 +432,8 @@
                         <a class="nav-link" href="/dashboard.html">📊 Dashboard</a>
                     </li>
                     <li class="nav-item" id="adminLink" style="display:none;">
-                        <a class="nav-link" href="/admin/dashboard.html" style="background:#fdcb6e;color:#000!important;">⚙️ Admin</a>
+                        <a class="nav-link" href="/admin/dashboard.html"
+                            style="background:#fdcb6e;color:#000!important;">⚙️ Admin</a>
                     </li>
                     <li class="nav-item dropdown" id="userDropdownMenu" style="display:none;">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
@@ -389,13 +443,20 @@
                             <li><a class="dropdown-item" href="/dashboard.html">📊 Tableau de bord</a></li>
                             <li><a class="dropdown-item" href="/profile.html">👤 Mon profil</a></li>
                             <li><a class="dropdown-item" href="/history.html">📋 Historique</a></li>
-                            <li id="adminDropdownItem" style="display:none;"><hr class="dropdown-divider"><a class="dropdown-item" href="/admin/dashboard.html">⚙️ Administration</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a></li>
+                            <li id="adminDropdownItem" style="display:none;">
+                                <hr class="dropdown-divider"><a class="dropdown-item" href="/admin/dashboard.html">⚙️
+                                    Administration</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item" id="loginNavItem">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" style="background:var(--primary);color:white!important;border-radius:30px;padding:10px 25px!important;">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal"
+                            style="background:var(--primary);color:white!important;border-radius:30px;padding:10px 25px!important;">
                             🔑 Connexion
                         </a>
                     </li>
@@ -464,11 +525,13 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Départ</label>
-                            <input type="text" class="form-control search-input" id="depart" placeholder="Ville de départ">
+                            <input type="text" class="form-control search-input" id="depart"
+                                placeholder="Ville de départ">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Destination</label>
-                            <input type="text" class="form-control search-input" id="destination" placeholder="Ville d'arrivée">
+                            <input type="text" class="form-control search-input" id="destination"
+                                placeholder="Ville d'arrivée">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Date</label>
@@ -573,15 +636,18 @@
                     <form id="loginForm">
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control search-input" id="loginEmail" placeholder="votre@email.com" required>
+                            <input type="email" class="form-control search-input" id="loginEmail"
+                                placeholder="votre@email.com" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Mot de passe</label>
-                            <input type="password" class="form-control search-input" id="loginPassword" placeholder="••••••••" required>
+                            <input type="password" class="form-control search-input" id="loginPassword"
+                                placeholder="••••••••" required>
                         </div>
                         <button type="submit" class="btn search-btn text-white w-100 mb-3">Se connecter</button>
                     </form>
-                    <p class="text-center">Pas de compte ? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal" class="fw-bold">S'inscrire</a></p>
+                    <p class="text-center">Pas de compte ? <a href="#" data-bs-toggle="modal"
+                            data-bs-target="#registerModal" data-bs-dismiss="modal" class="fw-bold">S'inscrire</a></p>
                 </div>
             </div>
         </div>
@@ -597,10 +663,14 @@
                 </div>
                 <div class="modal-body px-4">
                     <form id="registerForm">
-                        <div class="mb-3"><label class="form-label">Nom complet</label><input type="text" class="form-control search-input" id="registerNom" required></div>
-                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control search-input" id="registerEmail" required></div>
-                        <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password" class="form-control search-input" id="registerPassword" required></div>
-                        <div class="mb-3"><label class="form-label">Téléphone</label><input type="tel" class="form-control search-input" id="registerTelephone"></div>
+                        <div class="mb-3"><label class="form-label">Nom complet</label><input type="text"
+                                class="form-control search-input" id="registerNom" required></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email"
+                                class="form-control search-input" id="registerEmail" required></div>
+                        <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password"
+                                class="form-control search-input" id="registerPassword" required></div>
+                        <div class="mb-3"><label class="form-label">Téléphone</label><input type="tel"
+                                class="form-control search-input" id="registerTelephone"></div>
                         <button type="submit" class="btn search-btn text-white w-100">S'inscrire</button>
                     </form>
                 </div>
@@ -611,14 +681,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/script.js"></script>
     <script>
-        // Charger les stats
+        // Charger les stats (ignorer si non connecté)
         fetch('/api/admin/dashboard')
-            .then(r => r.json())
+            .then(r => r.ok ? r.json() : null)
             .then(d => {
-                document.getElementById('statUsers').textContent = (d.stats?.users || 0) + '+';
-                document.getElementById('statTrips').textContent = (d.stats?.trips || 0) + '+';
+                if (d && d.stats) {
+                    const el1 = document.getElementById('statUsers');
+                    const el2 = document.getElementById('statTrips');
+                    if (el1) el1.textContent = (d.stats.users || 0) + '+';
+                    if (el2) el2.textContent = (d.stats.trips || 0) + '+';
+                }
             })
-            .catch(() => {});
+            .catch(() => { }); // Ignorer l'erreur silencieusement
     </script>
 </body>
+
 </html>
