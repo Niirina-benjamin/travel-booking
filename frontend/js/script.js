@@ -1,52 +1,23 @@
-// Configuration de l'API
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api' 
-    : '/api';
+// ==========================================
+// SCRIPT.JS - COMPLET ET CORRIGÉ
+// ==========================================
 
-// Gestion du token
+const API_URL = window.location.origin + '/api';
 let currentUser = null;
 const token = localStorage.getItem('token');
 const savedUser = localStorage.getItem('user');
 
+// Charger l'utilisateur au démarrage
 if (token && savedUser) {
-    currentUser = JSON.parse(savedUser);
-    updateUI();
-    
-    // 🔥 Si on est sur la page d'accueil et qu'on est admin, proposer d'aller au dashboard
-    if (currentUser.role === 'admin' && window.location.pathname === '/' || window.location.pathname === '/index.html') {
-        // Optionnel : rediriger automatiquement
-        // window.location.href = '/admin/dashboard.html';
-        
-        // Ou afficher un bouton dashboard dans la navbar
-        console.log('✅ Admin connecté');
+    try {
+        currentUser = JSON.parse(savedUser);
+    } catch (e) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
     }
 }
 
-// Mise à jour de l'interface utilisateur
-function updateUI() {
-    if (currentUser) {
-        // Remplacer le lien connexion
-        const loginLink = document.querySelector('#loginNavItem .nav-link');
-        if (loginLink) {
-            loginLink.textContent = currentUser.nom;
-            loginLink.removeAttribute('data-bs-toggle');
-            loginLink.removeAttribute('data-bs-target');
-            loginLink.href = '/profile.html';
-        }
-        
-        // 🔥 Afficher le dashboard CLIENT pour tous les utilisateurs connectés
-        const dashboardLink = document.getElementById('dashboardLink');
-        if (dashboardLink) dashboardLink.style.display = 'block';
-        
-        // 🔥 Afficher le lien admin UNIQUEMENT pour les admins
-        if (currentUser.role === 'admin') {
-            const adminLink = document.getElementById('adminLink');
-            if (adminLink) adminLink.style.display = 'block';
-        }
-    }
-}
-
-// Mise à jour de la navbar
+// Mise à jour de la navbar IMMÉDIATEMENT
 function updateNavbar() {
     const loginNavItem = document.getElementById('loginNavItem');
     const userDropdownMenu = document.getElementById('userDropdownMenu');
@@ -55,27 +26,61 @@ function updateNavbar() {
     const dashboardLink = document.getElementById('dashboardLink');
     const adminLink = document.getElementById('adminLink');
 
+    console.log('🔄 Mise à jour navbar - currentUser:', currentUser);
+
     if (currentUser) {
+        // Cacher le bouton connexion
         if (loginNavItem) loginNavItem.style.display = 'none';
-        if (userDropdownMenu) userDropdownMenu.style.display = 'block';
-        if (userNameDisplay) userNameDisplay.textContent = currentUser.nom;
+        
+        // Afficher le dropdown utilisateur
+        if (userDropdownMenu) {
+            userDropdownMenu.style.display = 'block';
+            console.log('✅ Dropdown affiché');
+        }
+        
+        // Afficher le nom
+        if (userNameDisplay) {
+            userNameDisplay.textContent = currentUser.nom;
+            console.log('✅ Nom mis à jour:', currentUser.nom);
+        }
+        
+        // Afficher le lien dashboard
         if (dashboardLink) dashboardLink.style.display = 'block';
         
+        // Afficher admin si admin
         if (currentUser.role === 'admin') {
             if (adminDropdownItem) adminDropdownItem.style.display = 'block';
             if (adminLink) adminLink.style.display = 'block';
         }
     } else {
+        // Afficher le bouton connexion
         if (loginNavItem) loginNavItem.style.display = 'block';
+        
+        // Cacher le dropdown
         if (userDropdownMenu) userDropdownMenu.style.display = 'none';
         if (dashboardLink) dashboardLink.style.display = 'none';
         if (adminLink) adminLink.style.display = 'none';
     }
 }
 
+// Appliquer IMMÉDIATEMENT au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Page chargée - Mise à jour navbar');
+    updateNavbar();
+    
+    // Charger les trajets si sur la page d'accueil
+    if (document.getElementById('tripsList')) {
+        fetch(`${API_URL}/trips`)
+            .then(r => r.json())
+            .then(trips => displayTrips(trips))
+            .catch(e => console.error('Erreur chargement trajets:', e));
+    }
+});
+
 // Déconnexion
 function logout(e) {
     e.preventDefault();
+    console.log('🚪 Déconnexion...');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     currentUser = null;
@@ -83,70 +88,74 @@ function logout(e) {
     window.location.href = '/';
 }
 
-// Gestion de l'inscription
-document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+// Connexion
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const formData = {
-        nom: document.getElementById('registerNom').value,
-        email: document.getElementById('registerEmail').value,
-        password: document.getElementById('registerPassword').value,
-        telephone: document.getElementById('registerTelephone').value
-    };
-
     try {
-        const response = await fetch(`${API_URL}/auth/register`, {
+        const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            })
         });
 
         const data = await response.json();
         
         if (response.ok) {
-            alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
-            bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
-            new bootstrap.Modal(document.getElementById('loginModal')).show();
+            // Sauvegarder
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            currentUser = data.user;
+            
+            console.log('✅ Connecté:', currentUser);
+            
+            // Mettre à jour la navbar
+            updateNavbar();
+            
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+            if (modal) modal.hide();
+            
+            // Redirection
+            if (data.user.role === 'admin') {
+                window.location.href = '/admin/dashboard.html';
+            } else {
+                window.location.href = '/dashboard.html';
+            }
         } else {
-            alert(data.message);
+            alert(data.message || 'Erreur de connexion');
         }
     } catch (error) {
         alert('Erreur de connexion au serveur');
     }
 });
 
-// Gestion de la connexion
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+// Inscription
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const formData = {
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value
-    };
-
     try {
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({
+                nom: document.getElementById('registerNom').value,
+                email: document.getElementById('registerEmail').value,
+                password: document.getElementById('registerPassword').value,
+                telephone: document.getElementById('registerTelephone').value
+            })
         });
 
         const data = await response.json();
         
         if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            currentUser = data.user;
-            updateUI();
-            
-            bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-            
-            // 🔥 REDIRECTION SELON LE RÔLE
-            if (data.user.role === 'admin') {
-                window.location.href = '/admin/dashboard.html';
-            } else {
-                window.location.href = '/index.html';
-            }
+            alert('✅ Inscription réussie ! Connectez-vous.');
+            const registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+            if (registerModal) registerModal.hide();
+            new bootstrap.Modal(document.getElementById('loginModal')).show();
         } else {
             alert(data.message);
         }
@@ -182,31 +191,25 @@ function displayTrips(trips) {
     const container = document.getElementById('tripsList');
     if (!container) return;
 
+    if (trips.length === 0) {
+        container.innerHTML = '<div class="col-12"><div class="alert alert-info text-center rounded-4">Aucun trajet trouvé.</div></div>';
+        return;
+    }
+
     container.innerHTML = trips.map(trip => `
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">${trip.depart} → ${trip.destination}</h5>
-                    <p class="card-text">
-                        <strong>Départ:</strong> ${new Date(trip.date_depart).toLocaleString()}<br>
-                        <strong>Arrivée:</strong> ${new Date(trip.date_arrivee).toLocaleString()}<br>
-                        <strong>Véhicule:</strong> ${trip.type_vehicule} - ${trip.modele_vehicule}<br>
-                        <strong>Places disponibles:</strong> ${trip.places_disponibles}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="h5 text-primary mb-0">${trip.prix}€</span>
-                        <a href="seats.html?trip=${trip.id}" class="btn btn-primary">Réserver</a>
-                    </div>
+            <div class="trip-card">
+                <div class="trip-card-header">
+                    <div class="trip-route">${trip.depart} → ${trip.destination}</div>
+                    <div class="trip-price">${trip.prix}€</div>
+                </div>
+                <div class="trip-card-body">
+                    <div class="trip-info"><i class="fas fa-calendar-alt"></i> ${new Date(trip.date_depart).toLocaleString('fr-FR')}</div>
+                    <div class="trip-info"><i class="fas fa-bus"></i> ${trip.modele_vehicule || 'Bus'}</div>
+                    <div class="trip-info"><i class="fas fa-chair"></i> ${trip.places_disponibles} places</div>
+                    <a href="/seats.html?trip=${trip.id}" class="btn btn-book mt-3 w-100">Réserver</a>
                 </div>
             </div>
         </div>
     `).join('');
-}
-
-// Charger les trajets au chargement de la page
-if (document.getElementById('tripsList')) {
-    fetch(`${API_URL}/trips`)
-        .then(response => response.json())
-        .then(trips => displayTrips(trips))
-        .catch(error => console.error('Erreur:', error));
 }
