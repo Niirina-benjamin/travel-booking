@@ -5,95 +5,505 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Réservation - TravelBook</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --accent: #FD79A8;
+            --dark: #2D3436;
+            --light: #F8F9FA;
+            --success: #00b894;
+            --warning: #fdcb6e;
+        }
+
+        * { font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+            padding: 12px 0;
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 900;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-custom .nav-link {
+            font-weight: 500;
+            color: var(--dark) !important;
+            margin: 0 3px;
+            padding: 10px 18px !important;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
+            background: var(--primary);
+            color: white !important;
+        }
+
+        /* Hero Section */
+        .hero-mini {
+            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #FD79A8 100%);
+            padding: 60px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-mini::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, -30px) rotate(180deg); }
+        }
+
+        .hero-mini * { position: relative; z-index: 1; }
+
+        /* Progress */
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.3);
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .progress-custom .progress-bar {
+            border-radius: 10px;
+            background: white;
+            transition: width 0.5s ease;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: -30px;
+            position: relative;
+            z-index: 10;
+            padding: 0 10%;
+        }
+
+        .step-dot {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.2);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .step-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #636e72;
+        }
+
+        /* Search Card */
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-top: 30px;
+        }
+
+        .search-card h3 {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .search-input {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.15);
+            background: white;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-filter {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 12px 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: var(--dark);
+        }
+
+        .btn-filter:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-filter i {
+            margin-right: 8px;
+        }
+
+        /* Results */
+        .results-header {
+            margin: 30px 0 20px;
+        }
+
+        .trip-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            border: none;
+            margin-bottom: 25px;
+        }
+
+        .trip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .trip-card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 30px;
+            position: relative;
+        }
+
+        .trip-price-tag {
+            position: absolute;
+            top: -15px;
+            right: 25px;
+            background: var(--accent);
+            color: white;
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.3rem;
+            box-shadow: 0 5px 15px rgba(253, 121, 168, 0.4);
+        }
+
+        .trip-card-body {
+            padding: 25px 30px;
+        }
+
+        .trip-info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            color: #636e72;
+            font-size: 0.95rem;
+        }
+
+        .trip-info-item i {
+            color: var(--primary);
+            width: 22px;
+            font-size: 1.1rem;
+        }
+
+        .btn-book {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-book:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+            color: white;
+        }
+
+        .rating-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-mini { padding: 40px 0 60px; }
+            .step-indicator { padding: 0 5%; }
+            .step-dot { width: 35px; height: 35px; font-size: 0.9rem; }
+            .trip-card-header { padding: 20px; }
+            .trip-card-body { padding: 20px; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/index.html">🚌 TravelBook</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/index.html">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/reservation.html">Réservation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/history.html">Historique</a></li>
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-bus"></i> TravelBook
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">🏠 Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/reservation.html">🎫 Réservation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/history.html">📋 Historique</a></li>
+                    <li class="nav-item" id="dashboardLink" style="display:none;"><a class="nav-link" href="/dashboard.html">📊 Dashboard</a></li>
+                    <li class="nav-item" id="adminLink" style="display:none;"><a class="nav-link" href="/admin/dashboard.html" style="background:#fdcb6e;color:#000!important;">⚙️ Admin</a></li>
+                    <li class="nav-item dropdown" id="userDropdownMenu" style="display:none;">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">👤 <span id="userNameDisplay">Compte</span></a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/dashboard.html">📊 Tableau de bord</a></li>
+                            <li><a class="dropdown-item" href="/profile.html">👤 Profil</a></li>
+                            <li><a class="dropdown-item" href="/history.html">📋 Historique</a></li>
+                            <li id="adminDropdownItem" style="display:none;"><hr class="dropdown-divider"><a class="dropdown-item" href="/admin/dashboard.html">⚙️ Admin</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginNavItem">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" style="background:var(--primary);color:white!important;border-radius:30px;">🔑 Connexion</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <h2 class="mb-4">Réservation de voyage</h2>
-        
-        <!-- Étapes de réservation -->
-        <div class="progress mb-4" style="height: 30px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 33%">
-                Étape 1: Détails du voyage
+    <!-- Hero Mini -->
+    <div class="hero-mini text-white text-center">
+        <div class="container">
+            <h1 class="fw-bold mb-2" style="font-size:2.5rem;">🎫 Réserver un voyage</h1>
+            <p class="opacity-75">Trouvez le trajet idéal en quelques clics</p>
+        </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="container">
+        <div class="progress-custom">
+            <div class="progress-bar" style="width: 33%;"></div>
+        </div>
+        <div class="step-indicator">
+            <div>
+                <div class="step-dot active">1</div>
+                <div class="step-label">Recherche</div>
+            </div>
+            <div>
+                <div class="step-dot">2</div>
+                <div class="step-label">Sièges</div>
+            </div>
+            <div>
+                <div class="step-dot">3</div>
+                <div class="step-label">Confirmation</div>
             </div>
         </div>
+    </div>
 
-        <form id="reservationForm">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="depart" class="form-label">Lieu de départ</label>
-                    <select class="form-select" id="depart" required>
-                        <option value="">Choisir...</option>
-                        <option value="Paris">Paris</option>
-                        <option value="Lyon">Lyon</option>
-                        <option value="Marseille">Marseille</option>
-                        <option value="Nice">Nice</option>
-                        <option value="Bordeaux">Bordeaux</option>
-                    </select>
+    <!-- Search Form -->
+    <div class="container mb-5">
+        <div class="search-card">
+            <h3><i class="fas fa-search text-primary"></i> Rechercher un trajet</h3>
+            <p class="text-muted mb-4">Remplissez les champs pour trouver votre voyage</p>
+            
+            <form id="reservationForm">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lieu de départ</label>
+                        <select class="form-select search-input" id="depart" required>
+                            <option value="">Choisir une ville...</option>
+                            <option value="Paris">Paris</option>
+                            <option value="Lyon">Lyon</option>
+                            <option value="Marseille">Marseille</option>
+                            <option value="Nice">Nice</option>
+                            <option value="Bordeaux">Bordeaux</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Destination</label>
+                        <select class="form-select search-input" id="destination" required>
+                            <option value="">Choisir une ville...</option>
+                            <option value="Paris">Paris</option>
+                            <option value="Lyon">Lyon</option>
+                            <option value="Marseille">Marseille</option>
+                            <option value="Nice">Nice</option>
+                            <option value="Bordeaux">Bordeaux</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="destination" class="form-label">Destination</label>
-                    <select class="form-select" id="destination" required>
-                        <option value="">Choisir...</option>
-                        <option value="Paris">Paris</option>
-                        <option value="Lyon">Lyon</option>
-                        <option value="Marseille">Marseille</option>
-                        <option value="Nice">Nice</option>
-                        <option value="Bordeaux">Bordeaux</option>
-                    </select>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Date de départ</label>
+                        <input type="date" class="form-control search-input" id="date" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Passagers</label>
+                        <input type="number" class="form-control search-input" id="passagers" min="1" max="10" value="1" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Classe</label>
+                        <select class="form-select search-input" id="classe">
+                            <option value="economique">Économique</option>
+                            <option value="confort">Confort</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtres avancés -->
+                <div class="mb-3">
+                    <button class="btn btn-filter" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                        <i class="fas fa-sliders-h"></i> Filtres avancés
+                    </button>
+                </div>
+
+                <div class="collapse mb-3" id="advancedFilters">
+                    <div class="card card-body bg-light border-0 rounded-4 p-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Prix min (€)</label>
+                                <input type="number" class="form-control search-input" id="prixMin" placeholder="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Prix max (€)</label>
+                                <input type="number" class="form-control search-input" id="prixMax" placeholder="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Places min</label>
+                                <input type="number" class="form-control search-input" id="placesMin" placeholder="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Date max</label>
+                                <input type="date" class="form-control search-input" id="dateMax">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-search w-100 btn-lg">
+                    <i class="fas fa-search me-2"></i>Rechercher les trajets disponibles
+                </button>
+            </form>
+        </div>
+
+        <!-- Results -->
+        <div id="searchResults" style="display:none;">
+            <div class="results-header">
+                <h3><i class="fas fa-list text-primary"></i> Trajets trouvés</h3>
+            </div>
+            <div id="availableTrips"></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">🔑 Connexion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4">
+                    <form id="loginForm">
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control search-input" id="loginEmail" required></div>
+                        <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password" class="form-control search-input" id="loginPassword" required></div>
+                        <button type="submit" class="btn btn-search w-100 text-white">Se connecter</button>
+                    </form>
+                    <p class="text-center mt-3">Pas de compte ? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal" class="fw-bold">S'inscrire</a></p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="date" class="form-label">Date de départ</label>
-                    <input type="date" class="form-control" id="date" required>
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">✨ Inscription</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="passagers" class="form-label">Nombre de passagers</label>
-                    <input type="number" class="form-control" id="passagers" min="1" max="10" value="1" required>
+                <div class="modal-body px-4">
+                    <form id="registerForm">
+                        <div class="mb-3"><label class="form-label">Nom</label><input type="text" class="form-control search-input" id="registerNom" required></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control search-input" id="registerEmail" required></div>
+                        <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password" class="form-control search-input" id="registerPassword" required></div>
+                        <div class="mb-3"><label class="form-label">Téléphone</label><input type="tel" class="form-control search-input" id="registerTelephone"></div>
+                        <button type="submit" class="btn btn-search w-100 text-white">S'inscrire</button>
+                    </form>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="classe" class="form-label">Classe</label>
-                    <select class="form-select" id="classe">
-                        <option value="economique">Économique</option>
-                        <option value="confort">Confort</option>
-                        <option value="premium">Premium</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="preferences" class="form-label">Préférences (optionnel)</label>
-                <textarea class="form-control" id="preferences" rows="3" placeholder="Ex: Sièges côte fenêtre, proche de l'avant..."></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-lg">Rechercher les trajets disponibles</button>
-        </form>
-
-        <!-- Résultats de recherche -->
-        <div id="searchResults" class="mt-5" style="display: none;">
-            <h3>Trajets disponibles</h3>
-            <div id="availableTrips" class="row">
-                <!-- Les trajets seront chargés ici -->
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/script.js"></script>
     <script src="/js/reservation.js"></script>
 </body>
 </html>

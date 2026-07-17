@@ -6,101 +6,279 @@
     <title>Historique - TravelBook</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --accent: #FD79A8;
+            --dark: #2D3436;
+            --light: #F8F9FA;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+        }
+
+        * { font-family: 'Poppins', sans-serif; }
+
+        body { background: #f0f2f5; min-height: 100vh; }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+            padding: 12px 0;
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 900;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-custom .nav-link {
+            font-weight: 500;
+            color: var(--dark) !important;
+            margin: 0 3px;
+            padding: 10px 18px !important;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
+            background: var(--primary);
+            color: white !important;
+        }
+
+        /* Hero Mini */
+        .hero-mini {
+            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #FD79A8 100%);
+            padding: 50px 0 60px;
+            margin-bottom: 40px;
+        }
+
+        /* Booking Card */
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            border: none;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--primary);
+        }
+
+        .booking-card.confirmed { border-left-color: var(--success); }
+        .booking-card.pending { border-left-color: var(--warning); }
+        .booking-card.cancelled { border-left-color: var(--danger); }
+
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .booking-card .card-body { padding: 25px 30px; }
+
+        .route-display {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .route-arrow {
+            color: var(--primary);
+            margin: 0 10px;
+        }
+
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .btn-action {
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover { transform: scale(1.05); }
+
+        .seat-badge {
+            display: inline-block;
+            background: #e8e4ff;
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin: 2px;
+        }
+
+        .price-display {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Star Rating */
         .star-rating i {
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 2rem;
         }
-        .star-rating i:hover {
-            transform: scale(1.3);
+
+        .star-rating i:hover { transform: scale(1.3); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            color: #dfe6e9;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .route-display { font-size: 1.1rem; }
+            .price-display { font-size: 1.4rem; }
+            .booking-card .card-body { padding: 20px; }
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/">🚌 TravelBook</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/reservation.html">Réservation</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/history.html">Historique</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/profile.html">Profil</a></li>
+            <a class="navbar-brand" href="/"><i class="fas fa-bus"></i> TravelBook</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">🏠 Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reservation.html">🎫 Réservation</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/history.html">📋 Historique</a></li>
+                    <li class="nav-item" id="dashboardLink" style="display:none;"><a class="nav-link" href="/dashboard.html">📊 Dashboard</a></li>
+                    <li class="nav-item" id="adminLink" style="display:none;"><a class="nav-link" href="/admin/dashboard.html" style="background:#fdcb6e;color:#000!important;">⚙️ Admin</a></li>
+                    <li class="nav-item dropdown" id="userDropdownMenu" style="display:none;">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">👤 <span id="userNameDisplay">Compte</span></a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/dashboard.html">📊 Tableau de bord</a></li>
+                            <li><a class="dropdown-item" href="/profile.html">👤 Profil</a></li>
+                            <li><a class="dropdown-item" href="/history.html">📋 Historique</a></li>
+                            <li id="adminDropdownItem" style="display:none;"><hr class="dropdown-divider"><a class="dropdown-item" href="/admin/dashboard.html">⚙️ Admin</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginNavItem">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" style="background:var(--primary);color:white!important;border-radius:30px;">🔑 Connexion</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>📋 Historique de vos réservations</h2>
-            <div>
-                <button class="btn btn-success me-2" onclick="exportCSV()">
-                    <i class="fas fa-file-csv"></i> Exporter CSV
-                </button>
-                <button class="btn btn-outline-primary" onclick="loadBookings()">
-                    <i class="fas fa-sync-alt"></i> Actualiser
-                </button>
-            </div>
+    <!-- Hero Mini -->
+    <div class="hero-mini text-white text-center">
+        <div class="container">
+            <h1 class="fw-bold" style="font-size:2.2rem;">📋 Historique des réservations</h1>
+            <p class="opacity-75">Retrouvez tous vos voyages passés et à venir</p>
         </div>
-        
-        <div id="bookingsList">
-            <!-- Chargé dynamiquement -->
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                </div>
-                <p class="mt-3">Chargement de vos réservations...</p>
+    </div>
+
+    <!-- Content -->
+    <div class="container mb-5">
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h3 class="fw-bold mb-0"><i class="fas fa-list-check text-primary"></i> Mes réservations</h3>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-success btn-action" onclick="exportCSV()">
+                    <i class="fas fa-file-csv me-2"></i>Exporter CSV
+                </button>
+                <button class="btn btn-outline-primary btn-action" onclick="loadBookings()">
+                    <i class="fas fa-sync-alt me-2"></i>Actualiser
+                </button>
             </div>
         </div>
 
-        <div id="noBookings" class="text-center py-5" style="display: none;">
-            <i class="fas fa-ticket-alt" style="font-size: 64px; color: #6c757d;"></i>
-            <h4 class="mt-3 text-muted">Aucune réservation</h4>
-            <p>Vous n'avez pas encore effectué de réservation.</p>
-            <a href="/reservation.html" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Réserver maintenant
+        <!-- Bookings List -->
+        <div id="bookingsList">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mt-3 text-muted">Chargement de vos réservations...</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="noBookings" class="empty-state" style="display:none;">
+            <i class="fas fa-ticket-alt"></i>
+            <h4 class="text-muted">Aucune réservation</h4>
+            <p class="text-muted mb-4">Vous n'avez pas encore effectué de réservation.</p>
+            <a href="/reservation.html" class="btn btn-search btn-lg text-white" style="background:linear-gradient(135deg, var(--primary), var(--secondary));border-radius:30px;padding:12px 35px;">
+                <i class="fas fa-plus me-2"></i>Réserver maintenant
             </a>
         </div>
     </div>
 
-    <!-- Modal pour laisser un avis -->
-    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title" id="reviewModalLabel">
-                        ⭐ Laisser un avis
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0" style="background:linear-gradient(135deg, #fdcb6e, #f39c12);">
+                    <h5 class="modal-title fw-bold text-dark">⭐ Laisser un avis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <form id="reviewForm">
                         <input type="hidden" id="reviewTripId">
                         <input type="hidden" id="reviewBookingId">
                         
                         <div class="text-center mb-4">
-                            <p class="mb-2 fw-bold">Votre note :</p>
+                            <p class="fw-bold mb-2">Votre note :</p>
                             <div class="star-rating" id="starRating">
-                                <i class="far fa-star fa-3x text-warning" data-rating="1"></i>
-                                <i class="far fa-star fa-3x text-warning" data-rating="2"></i>
-                                <i class="far fa-star fa-3x text-warning" data-rating="3"></i>
-                                <i class="far fa-star fa-3x text-warning" data-rating="4"></i>
-                                <i class="far fa-star fa-3x text-warning" data-rating="5"></i>
+                                <i class="far fa-star text-warning" data-rating="1"></i>
+                                <i class="far fa-star text-warning" data-rating="2"></i>
+                                <i class="far fa-star text-warning" data-rating="3"></i>
+                                <i class="far fa-star text-warning" data-rating="4"></i>
+                                <i class="far fa-star text-warning" data-rating="5"></i>
                             </div>
                             <input type="hidden" id="reviewRating" value="0">
-                            <p id="ratingText" class="text-muted mt-2">Cliquez sur une étoile pour noter</p>
+                            <p id="ratingText" class="text-muted mt-2">Cliquez sur une étoile</p>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="reviewComment" class="form-label">Votre commentaire</label>
-                            <textarea class="form-control" id="reviewComment" rows="3" 
-                                      placeholder="Partagez votre expérience de voyage..."></textarea>
+                            <label class="form-label fw-semibold">Commentaire</label>
+                            <textarea class="form-control search-input" id="reviewComment" rows="3" placeholder="Partagez votre expérience..."></textarea>
                         </div>
                         
-                        <button type="submit" class="btn btn-warning w-100 btn-lg">
-                            <i class="fas fa-paper-plane"></i> Publier l'avis
+                        <button type="submit" class="btn btn-warning w-100 btn-lg fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i>Publier l'avis
                         </button>
                     </form>
                 </div>
@@ -108,7 +286,24 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold">🔑 Connexion</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body px-4">
+                    <form id="loginForm">
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control search-input" id="loginEmail" required></div>
+                        <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password" class="form-control search-input" id="loginPassword" required></div>
+                        <button type="submit" class="btn w-100 text-white" style="background:var(--primary);">Se connecter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/script.js"></script>
     <script src="/js/history.js"></script>
 </body>
 </html>
