@@ -6,84 +6,236 @@
     <title>Mon Profil - TravelBook</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7; --secondary: #A29BFE; --accent: #FD79A8;
+            --dark: #2D3436; --light: #F8F9FA; --success: #00b894;
+            --warning: #fdcb6e; --danger: #e17055;
+        }
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #f0f2f5; min-height: 100vh; }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08); padding: 12px 0;
+        }
+        .navbar-custom .navbar-brand {
+            font-weight: 900; font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .navbar-custom .nav-link {
+            font-weight: 500; color: var(--dark) !important;
+            margin: 0 3px; padding: 10px 18px !important;
+            border-radius: 30px; transition: all 0.3s;
+        }
+        .navbar-custom .nav-link:hover, .navbar-custom .nav-link.active {
+            background: var(--primary); color: white !important;
+        }
+
+        /* Hero Mini */
+        .hero-mini {
+            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #FD79A8 100%);
+            padding: 45px 0 55px; margin-bottom: 30px;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: white; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08); overflow: hidden;
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
+            padding: 40px 20px 30px; text-align: center; color: white;
+        }
+        .profile-avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: white; margin: 0 auto 15px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .profile-avatar i { font-size: 50px; color: var(--primary); }
+        .profile-stats {
+            display: flex; justify-content: center; gap: 30px; margin-top: 20px;
+        }
+        .profile-stat { text-align: center; }
+        .profile-stat h4 { font-weight: 900; margin: 0; }
+
+        /* Form Card */
+        .form-card {
+            background: white; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08); margin-bottom: 25px;
+        }
+        .form-card h5 { font-weight: 700; margin-bottom: 20px; }
+        .form-input {
+            border: 2px solid #e9ecef; border-radius: 15px;
+            padding: 14px 20px; font-size: 1rem; transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        .form-input:focus {
+            border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 0.2rem rgba(108,92,231,0.15);
+        }
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none; padding: 14px 30px; border-radius: 15px;
+            font-weight: 600; color: white; transition: all 0.3s;
+        }
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(108,92,231,0.4);
+        }
+        .btn-password {
+            background: linear-gradient(135deg, var(--warning), #f39c12);
+            border: none; padding: 14px 30px; border-radius: 15px;
+            font-weight: 600; color: var(--dark); transition: all 0.3s;
+        }
+        .btn-password:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(253,203,110,0.4);
+        }
+
+        /* Notification */
+        .notification-item {
+            background: #f8f9fa; border-radius: 15px; padding: 18px 20px;
+            margin-bottom: 10px; border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+        .notification-item:hover { background: #e9ecef; }
+        .notification-item.read { border-left-color: #ccc; opacity: 0.7; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-stats { gap: 15px; }
+            .form-card { padding: 20px; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/">🚌 TravelBook</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Accueil</a>
-                <a class="nav-link" href="/reservation.html">Réservation</a>
-                <a class="nav-link" href="/history.html">Historique</a>
-                <a class="nav-link active" href="/profile.html">Profil</a>
+            <a class="navbar-brand" href="/"><i class="fas fa-bus"></i> TravelBook</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">🏠 Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reservation.html">🎫 Réservation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/history.html">📋 Historique</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard.html">📊 Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/profile.html">👤 Profil</a></li>
+                    <li class="nav-item" id="adminLink" style="display:none;"><a class="nav-link" href="/admin/dashboard.html" style="background:#fdcb6e;color:#000!important;">⚙️ Admin</a></li>
+                    <li class="nav-item dropdown" id="userDropdownMenu" style="display:none;">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">👤 <span id="userNameDisplay">Compte</span></a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/dashboard.html">📊 Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/profile.html">👤 Profil</a></li>
+                            <li><a class="dropdown-item" href="/history.html">📋 Historique</a></li>
+                            <li id="adminDropdownItem" style="display:none;"><hr class="dropdown-divider"><a class="dropdown-item" href="/admin/dashboard.html">⚙️ Admin</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginNavItem">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" style="background:var(--primary);color:white!important;border-radius:30px;">🔑 Connexion</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fas fa-user-circle fa-5x text-primary"></i>
-                        <h3 id="profileName" class="mt-3">---</h3>
-                        <p id="profileEmail" class="text-muted">---</p>
-                        <p id="profileMemberSince" class="small text-muted">---</p>
-                        <hr>
-                        <div class="row">
-                            <div class="col-6">
-                                <h4 id="totalBookings">0</h4>
-                                <small>Réservations</small>
+    <!-- Hero Mini -->
+    <div class="hero-mini text-white text-center">
+        <div class="container">
+            <h1 class="fw-bold" style="font-size:2.2rem;">👤 Mon Profil</h1>
+            <p class="opacity-75">Gérez vos informations personnelles</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row g-4">
+            <!-- Colonne gauche - Profil -->
+            <div class="col-lg-4">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar"><i class="fas fa-user-circle"></i></div>
+                        <h4 id="profileName">---</h4>
+                        <p class="text-white-50 mb-0" id="profileEmail">---</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-muted small" id="profileMemberSince">Membre depuis ---</p>
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <h4 class="text-primary" id="totalBookings">0</h4>
+                                <small class="text-muted">Réservations</small>
                             </div>
-                            <div class="col-6">
-                                <h4 id="totalReviews">0</h4>
-                                <small>Avis</small>
+                            <div class="profile-stat">
+                                <h4 class="text-success" id="totalReviews">0</h4>
+                                <small class="text-muted">Avis</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header"><h5><i class="fas fa-edit"></i> Modifier mon profil</h5></div>
-                    <div class="card-body">
-                        <form id="profileForm">
-                            <div class="mb-3">
-                                <label>Nom</label>
-                                <input type="text" class="form-control" id="editNom" required>
+
+            <!-- Colonne droite - Formulaires -->
+            <div class="col-lg-8">
+                <!-- Modifier profil -->
+                <div class="form-card">
+                    <h5><i class="fas fa-user-edit text-primary me-2"></i>Modifier mon profil</h5>
+                    <form id="profileForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Nom complet</label>
+                                <input type="text" class="form-control form-input" id="editNom" required>
                             </div>
-                            <div class="mb-3">
-                                <label>Email</label>
-                                <input type="email" class="form-control" id="editEmail" required>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email</label>
+                                <input type="email" class="form-control form-input" id="editEmail" required>
                             </div>
-                            <div class="mb-3">
-                                <label>Téléphone</label>
-                                <input type="tel" class="form-control" id="editTelephone">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Téléphone</label>
+                                <input type="tel" class="form-control form-input" id="editTelephone">
                             </div>
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
-                        </form>
-                    </div>
+                        </div>
+                        <button type="submit" class="btn btn-save mt-3"><i class="fas fa-save me-2"></i>Enregistrer les modifications</button>
+                    </form>
                 </div>
-                
-                <div class="card mb-4">
-                    <div class="card-header"><h5><i class="fas fa-lock"></i> Changer le mot de passe</h5></div>
-                    <div class="card-body">
-                        <form id="passwordForm">
-                            <div class="mb-3">
-                                <label>Mot de passe actuel</label>
-                                <input type="password" class="form-control" id="currentPassword" required>
+
+                <!-- Changer mot de passe -->
+                <div class="form-card">
+                    <h5><i class="fas fa-lock text-warning me-2"></i>Changer le mot de passe</h5>
+                    <form id="passwordForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Mot de passe actuel</label>
+                                <input type="password" class="form-control form-input" id="currentPassword" required>
                             </div>
-                            <div class="mb-3">
-                                <label>Nouveau mot de passe</label>
-                                <input type="password" class="form-control" id="newPassword" required>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Nouveau mot de passe</label>
+                                <input type="password" class="form-control form-input" id="newPassword" required>
                             </div>
-                            <div class="mb-3">
-                                <label>Confirmer</label>
-                                <input type="password" class="form-control" id="confirmPassword" required>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Confirmer</label>
+                                <input type="password" class="form-control form-input" id="confirmPassword" required>
                             </div>
-                            <button type="submit" class="btn btn-warning"><i class="fas fa-key"></i> Changer</button>
-                        </form>
+                        </div>
+                        <button type="submit" class="btn btn-password mt-3"><i class="fas fa-key me-2"></i>Changer le mot de passe</button>
+                    </form>
+                </div>
+
+                <!-- Notifications -->
+                <div class="form-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-bell text-info me-2"></i>Notifications</h5>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="loadNotifications()"><i class="fas fa-sync-alt me-1"></i>Actualiser</button>
+                    </div>
+                    <div id="notificationsList">
+                        <p class="text-muted text-center py-3">Chargement...</p>
                     </div>
                 </div>
             </div>
@@ -91,83 +243,79 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/script.js"></script>
     <script>
         const API_URL = window.location.origin + '/api';
         const token = localStorage.getItem('token');
-
-        if (!token) {
-            window.location.href = '/login.html';
-        }
+        if (!token) window.location.href = '/login.html';
 
         async function loadProfile() {
             try {
-                const response = await fetch(`${API_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const profile = await response.json();
-                
-                document.getElementById('profileName').textContent = profile.nom;
-                document.getElementById('profileEmail').textContent = profile.email;
-                document.getElementById('profileMemberSince').textContent = 
-                    'Membre depuis ' + new Date(profile.created_at).toLocaleDateString('fr-FR');
-                document.getElementById('totalBookings').textContent = profile.stats?.totalBookings || 0;
-                document.getElementById('totalReviews').textContent = profile.stats?.totalReviews || 0;
-                
-                document.getElementById('editNom').value = profile.nom;
-                document.getElementById('editEmail').value = profile.email;
-                document.getElementById('editTelephone').value = profile.telephone || '';
-            } catch (error) {
-                console.error('Erreur profil:', error);
-            }
+                const res = await fetch(`${API_URL}/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const p = await res.json();
+                document.getElementById('profileName').textContent = p.nom;
+                document.getElementById('profileEmail').textContent = p.email;
+                document.getElementById('profileMemberSince').textContent = 'Membre depuis ' + new Date(p.created_at).toLocaleDateString('fr-FR');
+                document.getElementById('totalBookings').textContent = p.stats?.totalBookings || 0;
+                document.getElementById('totalReviews').textContent = p.stats?.totalReviews || 0;
+                document.getElementById('editNom').value = p.nom;
+                document.getElementById('editEmail').value = p.email;
+                document.getElementById('editTelephone').value = p.telephone || '';
+                loadNotifications();
+            } catch (e) { console.error(e); }
         }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                const response = await fetch(`${API_URL}/profile`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({
-                        nom: document.getElementById('editNom').value,
-                        email: document.getElementById('editEmail').value,
-                        telephone: document.getElementById('editTelephone').value
-                    })
+                const res = await fetch(`${API_URL}/profile`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ nom: document.getElementById('editNom').value, email: document.getElementById('editEmail').value, telephone: document.getElementById('editTelephone').value })
                 });
-                if (response.ok) {
-                    alert('✅ Profil mis à jour !');
-                    loadProfile();
-                }
-            } catch (error) { console.error('Erreur:', error); }
+                if (res.ok) { alert('✅ Profil mis à jour !'); loadProfile(); }
+            } catch (e) { console.error(e); }
         });
 
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newPwd = document.getElementById('newPassword').value;
-            const confirmPwd = document.getElementById('confirmPassword').value;
-            
-            if (newPwd !== confirmPwd) {
-                alert('Les mots de passe ne correspondent pas');
-                return;
-            }
-            
+            const np = document.getElementById('newPassword').value;
+            const cp = document.getElementById('confirmPassword').value;
+            if (np !== cp) { alert('Les mots de passe ne correspondent pas'); return; }
             try {
-                const response = await fetch(`${API_URL}/profile/password`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({
-                        currentPassword: document.getElementById('currentPassword').value,
-                        newPassword: newPwd
-                    })
+                const res = await fetch(`${API_URL}/profile/password`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ currentPassword: document.getElementById('currentPassword').value, newPassword: np })
                 });
-                const result = await response.json();
-                if (response.ok) {
-                    alert('✅ Mot de passe changé !');
-                    document.getElementById('passwordForm').reset();
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) { console.error('Erreur:', error); }
+                const r = await res.json();
+                if (res.ok) { alert('✅ Mot de passe changé !'); document.getElementById('passwordForm').reset(); }
+                else { alert(r.message); }
+            } catch (e) { console.error(e); }
         });
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch(`${API_URL}/profile/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const notifs = await res.json();
+                const c = document.getElementById('notificationsList');
+                if (notifs.length === 0) { c.innerHTML = '<p class="text-muted text-center py-3">Aucune notification</p>'; return; }
+                c.innerHTML = notifs.map(n => `
+                    <div class="notification-item ${n.is_read ? 'read' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${n.title}</strong>
+                                <p class="mb-1 small">${n.message || ''}</p>
+                                <small class="text-muted">${new Date(n.created_at).toLocaleString('fr-FR')}</small>
+                            </div>
+                            ${!n.is_read ? `<button class="btn btn-sm btn-outline-success rounded-pill" onclick="markRead(${n.id})">✓ Lu</button>` : ''}
+                        </div>
+                    </div>`).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function markRead(id) {
+            await fetch(`${API_URL}/profile/notifications/${id}/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+            loadNotifications();
+        }
 
         loadProfile();
     </script>
