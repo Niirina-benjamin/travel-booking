@@ -214,7 +214,12 @@ async function saveTrip() {
 }
 
 async function deleteTrip(id) {
-    if (!confirm('⚠️ Supprimer définitivement ce trajet ?\nToutes les réservations associées seront également supprimées.')) return;
+    if (!confirm('⚠️ Supprimer définitivement ce trajet ?\n\n' +
+                 'Cette action va :\n' +
+                 '• Annuler toutes les réservations\n' +
+                 '• Supprimer tous les avis\n' +
+                 '• Notifier les utilisateurs concernés\n\n' +
+                 'Cette action est irréversible !')) return;
     
     try {
         const response = await fetch(`${API_URL}/admin/trips/${id}`, {
@@ -228,10 +233,12 @@ async function deleteTrip(id) {
         }
         
         const data = await response.json();
-        alert('✅ ' + data.message);
+        alert(data.message || '✅ Trajet supprimé avec succès');
         loadTrips();
+        loadDashboard(); // Rafraîchir aussi les stats
+        
     } catch (error) {
-        console.error('Erreur suppression:', error);
+        console.error('❌ Erreur suppression:', error);
         alert('❌ Erreur : ' + error.message);
     }
 }

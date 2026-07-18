@@ -75,41 +75,75 @@ router.put('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
+// Supprimer un trajet avec notification aux utilisateurs
 router.delete('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
         const tripId = req.params.id;
 
-        // 1. Supprimer les sièges réservés liés à ce trajet
+        // 1. Récupérer les infos du trajet pour les notifications
+        const [[trip]] = await connection.query(
+            'SELECT depart, destination, date_depart FROM trips WHERE id = ?', 
+            [tripId]
+        );
+        
+        if (!trip) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Trajet non trouvé' });
+        }
+
+        // 2. Récupérer les utilisateurs ayant des réservations sur ce trajet
+        const [affectedUsers] = await connection.query(
+            'SELECT DISTINCT user_id FROM bookings WHERE trip_id = ? AND statut != "annule"',
+            [tripId]
+        );
+
+        // 3. Supprimer les sièges réservés
         await connection.query(
             `DELETE bs FROM booking_seats bs 
              INNER JOIN bookings b ON bs.booking_id = b.id 
              WHERE b.trip_id = ?`, [tripId]
         );
 
-        // 2. Supprimer les réservations liées au trajet
-        await connection.query('DELETE FROM bookings WHERE trip_id = ?', [tripId]);
+        // 4. Annuler les réservations (au lieu de les supprimer)
+        await connection.query(
+            'UPDATE bookings SET statut = "annule" WHERE trip_id = ? AND statut != "annule"',
+            [tripId]
+        );
 
-        // 3. Supprimer les avis liés au trajet
+        // 5. Supprimer les avis
         await connection.query('DELETE FROM reviews WHERE trip_id = ?', [tripId]);
 
-        // 4. Supprimer les sièges du trajet
+        // 6. Supprimer les sièges
         await connection.query('DELETE FROM seats WHERE trip_id = ?', [tripId]);
 
-        // 5. Supprimer le trajet
-        const [result] = await connection.query('DELETE FROM trips WHERE id = ?', [tripId]);
-
-        if (result.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({ message: 'Trajet non trouvé' });
+        // 7. Notifier les utilisateurs concernés
+        for (const user of affectedUsers) {
+            await connection.query(
+                'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+                [
+                    user.user_id,
+                    'trip_cancelled',
+                    '🚫 Trajet annulé',
+                    `Le trajet ${trip.depart} → ${trip.destination} du ${new Date(trip.date_depart).toLocaleDateString('fr-FR')} a été annulé par l'administrateur. Votre réservation a été automatiquement annulée.`
+                ]
+            );
         }
 
+        // 8. Supprimer le trajet
+        await connection.query('DELETE FROM trips WHERE id = ?', [tripId]);
+
         await connection.commit();
-        res.json({ message: 'Trajet supprimé avec succès' });
+        
+        res.json({ 
+            message: `✅ Trajet supprimé. ${affectedUsers.length} utilisateur(s) notifié(s).`,
+            affectedUsers: affectedUsers.length
+        });
+        
     } catch (error) {
         await connection.rollback();
-        console.error('Erreur suppression trajet:', error);
+        console.error('❌ Erreur suppression trajet:', error);
         res.status(500).json({ message: 'Erreur lors de la suppression', error: error.message });
     } finally {
         connection.release();

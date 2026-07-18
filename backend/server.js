@@ -148,6 +148,9 @@ app.get('/login.html', (req, res) => {
 app.get('/confirmation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/confirmation.html'));
     res.sendFile(path.join(__dirname, '../frontend/pages/login.html'));
 });
+app.get('/confirmation.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/pages/confirmation.html'));
+});
 // Ajoutez cette ligne avec les autres routes HTML
 app.get('/profile.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/pages/profile.html'));
