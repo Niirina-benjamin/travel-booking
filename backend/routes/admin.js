@@ -76,8 +76,44 @@ router.put('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
 });
 
 router.delete('/trips/:id', authenticateToken, isAdmin, async (req, res) => {
-    await db.query('DELETE FROM trips WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Trajet supprimé' });
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const tripId = req.params.id;
+
+        // 1. Supprimer les sièges réservés liés à ce trajet
+        await connection.query(
+            `DELETE bs FROM booking_seats bs 
+             INNER JOIN bookings b ON bs.booking_id = b.id 
+             WHERE b.trip_id = ?`, [tripId]
+        );
+
+        // 2. Supprimer les réservations liées au trajet
+        await connection.query('DELETE FROM bookings WHERE trip_id = ?', [tripId]);
+
+        // 3. Supprimer les avis liés au trajet
+        await connection.query('DELETE FROM reviews WHERE trip_id = ?', [tripId]);
+
+        // 4. Supprimer les sièges du trajet
+        await connection.query('DELETE FROM seats WHERE trip_id = ?', [tripId]);
+
+        // 5. Supprimer le trajet
+        const [result] = await connection.query('DELETE FROM trips WHERE id = ?', [tripId]);
+
+        if (result.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Trajet non trouvé' });
+        }
+
+        await connection.commit();
+        res.json({ message: 'Trajet supprimé avec succès' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Erreur suppression trajet:', error);
+        res.status(500).json({ message: 'Erreur lors de la suppression', error: error.message });
+    } finally {
+        connection.release();
+    }
 });
 
 // Gestion des réservations (admin)

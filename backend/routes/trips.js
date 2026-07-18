@@ -2,6 +2,22 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 
+// Obtenir la liste des villes disponibles
+router.get('/cities', async (req, res) => {
+    try {
+        const [departs] = await db.query('SELECT DISTINCT depart FROM trips');
+        const [destinations] = await db.query('SELECT DISTINCT destination FROM trips');
+        
+        const cities = new Set();
+        departs.forEach(d => cities.add(d.depart));
+        destinations.forEach(d => cities.add(d.destination));
+        
+        res.json([...cities].sort());
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Obtenir tous les trajets disponibles
 router.get('/', async (req, res) => {
     try {
@@ -114,21 +130,5 @@ router.get('/search/advanced', async (req, res) => {
     }
 });
 
-// Obtenir la liste des villes disponibles
-router.get('/cities', async (req, res) => {
-    try {
-        const [departs] = await db.query('SELECT DISTINCT depart FROM trips WHERE statut = "programme"');
-        const [destinations] = await db.query('SELECT DISTINCT destination FROM trips WHERE statut = "programme"');
-        
-        // Fusionner et dédoublonner
-        const cities = new Set();
-        departs.forEach(d => cities.add(d.depart));
-        destinations.forEach(d => cities.add(d.destination));
-        
-        res.json([...cities].sort());
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
 
 module.exports = router;

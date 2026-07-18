@@ -214,13 +214,26 @@ async function saveTrip() {
 }
 
 async function deleteTrip(id) {
-    if (!confirm('Supprimer ce trajet ?')) return;
+    if (!confirm('⚠️ Supprimer définitivement ce trajet ?\nToutes les réservations associées seront également supprimées.')) return;
+    
     try {
-        await fetch(`${API_URL}/admin/trips/${id}`, {
-            method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch(`${API_URL}/admin/trips/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Erreur ${response.status}`);
+        }
+        
+        const data = await response.json();
+        alert('✅ ' + data.message);
         loadTrips();
-    } catch (error) { console.error('❌ Erreur:', error); }
+    } catch (error) {
+        console.error('Erreur suppression:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
 }
 
 // ==================== BOOKINGS ====================
