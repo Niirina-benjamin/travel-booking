@@ -144,10 +144,7 @@ app.get('/dashboard.html', (req, res) => sendHtmlFile(res, 'frontend/pages/dashb
 app.get('/reservation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/reservation.html'));
 app.get('/seats.html', (req, res) => sendHtmlFile(res, 'frontend/pages/seats.html'));
 app.get('/history.html', (req, res) => sendHtmlFile(res, 'frontend/pages/history.html'));
-app.get('/login.html', (req, res) => {
-app.get('/confirmation.html', (req, res) => sendHtmlFile(res, 'frontend/pages/confirmation.html'));
-    res.sendFile(path.join(__dirname, '../frontend/pages/login.html'));
-});
+app.get('/profile.html', (req, res) => sendHtmlFile(res, 'frontend/pages/profile.html'));
 app.get('/confirmation.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/pages/confirmation.html'));
 });
