@@ -1,17 +1,244 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sélection des Sièges - TravelBook</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/seats.css">
-</head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --accent: #FD79A8;
+            --dark: #2D3436;
+            --light: #F8F9FA;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+        }
 
+        * { font-family: 'Poppins', sans-serif; }
+
+        body { background: #f0f2f5; min-height: 100vh; }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+            padding: 12px 0;
+        }
+        .navbar-custom .navbar-brand {
+            font-weight: 900; font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .navbar-custom .nav-link {
+            font-weight: 500; color: var(--dark) !important;
+            margin: 0 3px; padding: 10px 18px !important;
+            border-radius: 30px; transition: all 0.3s;
+        }
+        .navbar-custom .nav-link:hover, .navbar-custom .nav-link.active {
+            background: var(--primary); color: white !important;
+        }
+
+        /* Hero Mini */
+        .hero-mini {
+            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 50%, #FD79A8 100%);
+            padding: 45px 0 55px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-mini::before {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 350px; height: 350px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            animation: float 20s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, -30px) rotate(180deg); }
+        }
+        .hero-mini * { position: relative; z-index: 1; }
+
+        /* Progress */
+        .progress-container {
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+        }
+        .progress-custom {
+            height: 8px; border-radius: 10px;
+            background: rgba(108,92,231,0.2);
+        }
+        .progress-custom .progress-bar {
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            transition: width 0.5s ease;
+        }
+        .step-indicator {
+            display: flex; justify-content: space-between;
+            margin-top: -28px; padding: 0 8%;
+        }
+        .step-dot {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .step-dot.active {
+            background: var(--primary); color: white;
+            transform: scale(1.2);
+            box-shadow: 0 8px 25px rgba(108,92,231,0.4);
+        }
+        .step-dot.done {
+            background: var(--success); color: white;
+        }
+        .step-label {
+            text-align: center; margin-top: 6px;
+            font-size: 0.8rem; font-weight: 500; color: #636e72;
+        }
+
+        /* Card */
+        .info-card {
+            background: white; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden; margin-bottom: 25px;
+        }
+        .info-card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 18px 25px; font-weight: 700;
+        }
+        .info-card-body { padding: 25px; }
+
+        .trip-info-item {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 12px; color: #636e72; font-size: 0.95rem;
+        }
+        .trip-info-item i { color: var(--primary); width: 22px; font-size: 1.1rem; }
+
+        /* Price Display */
+        .price-box {
+            background: #f8f9fa; border-radius: 15px; padding: 20px; text-align: center;
+        }
+        .price-label { color: #636e72; font-size: 0.85rem; margin-bottom: 5px; }
+        .price-value {
+            font-size: 2rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .price-total {
+            font-size: 1.8rem; font-weight: 900; color: var(--success);
+        }
+
+        /* Selected Seats */
+        .seat-badge {
+            display: inline-block;
+            background: #e8e4ff; color: var(--primary);
+            padding: 8px 15px; border-radius: 25px;
+            font-weight: 600; font-size: 0.9rem; margin: 3px;
+        }
+
+        /* Bus Container */
+        .bus-wrapper {
+            background: white; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .bus-header {
+            background: linear-gradient(135deg, var(--dark), #636e72);
+            color: white; padding: 18px 25px; font-weight: 700;
+        }
+        .bus-body {
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            padding: 30px; border-radius: 0;
+        }
+
+        /* Legend */
+        .legend-container {
+            display: flex; justify-content: center; gap: 20px;
+            flex-wrap: wrap; padding: 15px; background: #f8f9fa;
+            border-radius: 15px; margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 500;
+        }
+        .legend-dot {
+            width: 20px; height: 20px; border-radius: 6px;
+        }
+        .legend-dot.available { background: #00b894; }
+        .legend-dot.selected { background: #6C5CE7; }
+        .legend-dot.reserved { background: #e17055; }
+        .legend-dot.blocked { background: #636e72; }
+
+        /* Seats Grid */
+        .seats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 50px 1fr 1fr;
+            gap: 10px; padding: 20px;
+            max-width: 420px; margin: 0 auto;
+        }
+        .seat {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: 700; font-size: 14px;
+            transition: all 0.3s ease; cursor: pointer; user-select: none;
+            min-height: 50px; border: 2px solid rgba(0,0,0,0.1); color: white;
+        }
+        .seat.available { background: #00b894; cursor: pointer; }
+        .seat.available:hover { transform: scale(1.15); box-shadow: 0 5px 20px rgba(0,184,148,0.4); z-index: 1; }
+        .seat.selected { background: #6C5CE7; transform: scale(1.1); box-shadow: 0 5px 20px rgba(108,92,231,0.4); }
+        .seat.reserved { background: #e17055; cursor: not-allowed; opacity: 0.7; }
+        .seat.blocked { background: #636e72; cursor: not-allowed; opacity: 0.5; }
+        .seat-empty { background: transparent !important; border: 2px dashed rgba(255,255,255,0.3) !important; cursor: default; }
+        .aisle {
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.7); font-size: 10px;
+            font-weight: 600; writing-mode: vertical-rl;
+        }
+
+        /* Button */
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success), #00a381);
+            border: none; padding: 15px; border-radius: 15px;
+            font-weight: 700; font-size: 1.1rem; color: white;
+            transition: all 0.3s; width: 100%;
+        }
+        .btn-confirm:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,184,148,0.4);
+        }
+        .btn-confirm:disabled {
+            background: #b2bec3; cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal-content { border-radius: 20px; border: none; overflow: hidden; }
+        .modal-header { border: none; }
+        .success-animation {
+            animation: popIn 0.5s ease;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .seats-grid { max-width: 300px; gap: 8px; }
+            .seat { font-size: 11px; min-height: 40px; border-radius: 8px; }
+            .step-indicator { padding: 0 3%; }
+            .step-dot { width: 32px; height: 32px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
 <body>
-    <!-- Remplacer la navbar actuelle de seats.html par : -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
             <a class="navbar-brand" href="/"><i class="fas fa-bus"></i> TravelBook</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,89 +249,138 @@
                     <li class="nav-item"><a class="nav-link" href="/">🏠 Accueil</a></li>
                     <li class="nav-item"><a class="nav-link" href="/reservation.html">🎫 Réservation</a></li>
                     <li class="nav-item"><a class="nav-link" href="/history.html">📋 Historique</a></li>
-                    <li class="nav-item dropdown" id="userDropdownMenu">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">👤 <span
-                                id="userNameDisplay">Compte</span></a>
+                    <li class="nav-item dropdown" id="userDropdownMenu" style="display:none;">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">👤 <span id="userNameDisplay">Compte</span></a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="/dashboard.html">📊 Tableau de bord</a></li>
                             <li><a class="dropdown-item" href="/profile.html">👤 Profil</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a>
-                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout(event)">🚪 Déconnexion</a></li>
                         </ul>
                     </li>
                     <li class="nav-item" id="loginNavItem">
-                        <a class="nav-link" href="/login.html">🔑 Connexion</a>
+                        <a class="nav-link" href="/login.html" style="background:var(--primary);color:white!important;border-radius:30px;">🔑 Connexion</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <!-- Barre de progression -->
-        <div class="progress mb-4" style="height: 30px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 66%">
-                Étape 2: Choix des sièges
+    <!-- Hero Mini -->
+    <div class="hero-mini text-white text-center">
+        <div class="container">
+            <h1 class="fw-bold" style="font-size:2.2rem;">💺 Choisissez vos sièges</h1>
+            <p class="opacity-75">Sélectionnez vos places préférées</p>
+        </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-custom">
+                <div class="progress-bar" style="width: 66%;"></div>
+            </div>
+            <div class="step-indicator">
+                <div>
+                    <div class="step-dot done">✓</div>
+                    <div class="step-label">Recherche</div>
+                </div>
+                <div>
+                    <div class="step-dot active">2</div>
+                    <div class="step-label">Sièges</div>
+                </div>
+                <div>
+                    <div class="step-dot">3</div>
+                    <div class="step-label">Confirmation</div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="row">
-            <!-- Informations du trajet -->
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Détails du trajet</h5>
+    <!-- Content -->
+    <div class="container mt-4 mb-5">
+        <div class="row g-4">
+            <!-- Panneau gauche - Infos -->
+            <div class="col-lg-4">
+                <!-- Détails du trajet -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fas fa-info-circle me-2"></i>Détails du trajet
                     </div>
-                    <div class="card-body" id="tripDetails">
-                        <!-- Chargé dynamiquement -->
+                    <div class="info-card-body" id="tripDetails">
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2 text-muted">Chargement...</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card mb-4">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Résumé</h5>
+                <!-- Résumé -->
+                <div class="info-card">
+                    <div class="info-card-header" style="background: linear-gradient(135deg, var(--success), #00a381);">
+                        <i class="fas fa-receipt me-2"></i>Résumé
                     </div>
-                    <div class="card-body">
-                        <p>Sièges sélectionnés: <span id="selectedCount">0</span></p>
-                        <p>Prix unitaire: <span id="unitPrice">0</span>€</p>
-                        <p>Prix total: <strong><span id="totalPrice">0</span>€</strong></p>
-                        <div id="selectedSeatsList" class="mb-3"></div>
-                        <button id="confirmBooking" class="btn btn-success w-100" disabled>
-                            Confirmer la réservation
+                    <div class="info-card-body">
+                        <div class="price-box mb-3">
+                            <div class="price-label">Prix unitaire</div>
+                            <div class="price-value"><span id="unitPrice">0</span> €</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">Sièges sélectionnés : <strong id="selectedCount">0</strong></small>
+                            <div id="selectedSeatsList" class="mt-2"></div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="text-center mb-3">
+                            <small class="text-muted">Prix total</small>
+                            <div class="price-total" id="totalPrice">0,00 €</div>
+                        </div>
+                        
+                        <button id="confirmBooking" class="btn btn-confirm" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Confirmer la réservation
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Plan des sièges -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Sélectionnez vos sièges</h5>
+            <!-- Panneau droit - Sièges -->
+            <div class="col-lg-8">
+                <div class="bus-wrapper">
+                    <div class="bus-header">
+                        <i class="fas fa-bus me-2"></i>Plan du bus
                     </div>
-                    <div class="card-body">
+                    <div class="bus-body">
                         <!-- Légende -->
-                        <div class="d-flex justify-content-center mb-4">
-                            <span class="badge bg-success p-2 me-3">Disponible</span>
-                            <span class="badge bg-primary p-2 me-3">Sélectionné</span>
-                            <span class="badge bg-danger p-2 me-3">Réservé</span>
-                            <span class="badge bg-secondary p-2">Bloqué</span>
+                        <div class="legend-container">
+                            <div class="legend-item">
+                                <div class="legend-dot available"></div>
+                                <span>Disponible</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot selected"></div>
+                                <span>Sélectionné</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot reserved"></div>
+                                <span>Réservé</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot blocked"></div>
+                                <span>Bloqué</span>
+                            </div>
                         </div>
 
-                        <!-- Représentation du bus -->
-                        <div class="bus-container">
-                            <div class="bus-front">
-                                <i class="fas fa-bus"></i> Avant du bus
-                            </div>
-                            <div id="seatsContainer" class="seats-grid">
-                                <!-- Les sièges seront générés dynamiquement -->
-                            </div>
-                            <div class="bus-back">
-                                Arrière du bus <i class="fas fa-bus"></i>
-                            </div>
+                        <!-- Bus -->
+                        <div style="text-align:center;color:white;font-weight:600;margin-bottom:10px;">
+                            <i class="fas fa-steering-wheel"></i> Avant du bus
+                        </div>
+                        <div id="seatsContainer" class="seats-grid">
+                            <!-- Généré dynamiquement -->
+                        </div>
+                        <div style="text-align:center;color:white;font-weight:600;margin-top:10px;">
+                            Arrière du bus <i class="fas fa-bus"></i>
                         </div>
                     </div>
                 </div>
@@ -114,29 +390,61 @@
 
     <!-- Modal de confirmation -->
     <div class="modal fade" id="confirmationModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">✅ Réservation confirmée !</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header text-center" style="background:linear-gradient(135deg,#00b894,#00a381);">
+                    <h5 class="modal-title text-white fw-bold w-100">
+                        <i class="fas fa-check-circle me-2"></i>Réservation confirmée !
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
-                    <h4 class="mt-3">Merci pour votre réservation !</h4>
-                    <p>Votre numéro de réservation: <strong id="bookingNumber"></strong></p>
-                    <p>Vous recevrez un email de confirmation.</p>
+                <div class="modal-body text-center p-5">
+                    <div class="success-animation">
+                        <i class="fas fa-check-circle" style="font-size:80px;color:#00b894;"></i>
+                    </div>
+                    <h4 class="mt-4 fw-bold">Merci pour votre réservation !</h4>
+                    <p class="text-muted">Votre numéro de réservation :</p>
+                    <h3 class="fw-bold text-primary" id="bookingNumber">---</h3>
+                    <p class="small text-muted mt-3">Vous recevrez une confirmation par email.</p>
                 </div>
-                <div class="modal-footer">
-                    <a href="/index.html" class="btn btn-primary">Retour à l'accueil</a>
-                    <a href="/confirmation.html" class="btn btn-success">Voir la confirmation</a>
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <a href="/" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-home me-2"></i>Accueil
+                    </a>
+                    <a href="/confirmation.html" class="btn btn-success rounded-pill px-4">
+                        <i class="fas fa-ticket-alt me-2"></i>Voir le billet
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Gestion navbar
+        (function() {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const loginNav = document.getElementById('loginNavItem');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            
+            if (user && localStorage.getItem('token')) {
+                if (loginNav) loginNav.style.display = 'none';
+                if (userDropdown) userDropdown.style.display = 'block';
+                if (userNameDisplay) userNameDisplay.textContent = user.nom;
+            } else {
+                if (loginNav) loginNav.style.display = 'block';
+                if (userDropdown) userDropdown.style.display = 'none';
+            }
+        })();
+
+        function logout(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
     <script src="/js/seats.js"></script>
 </body>
-
 </html>
