@@ -1,12 +1,19 @@
 // Détection automatique de l'URL de l'API
-const API_URL = window.location.origin + "/api";
-console.log("🌍 API URL:", API_URL);
-console.log("📍 Page origin:", window.location.origin);
+// ⚠️ Utiliser le token de script.js ou le récupérer fraîchement
+const API_BASE = window.location.origin + "/api";
+const AUTH_TOKEN = localStorage.getItem("token"); // Toujours lire directement
+
+console.log("🌍 API URL:", API_BASE);
+console.log("🔑 Token présent:", !!AUTH_TOKEN);
 
 let selectedSeats = [];
 let tripData = null;
-let maxSeats = 1;
-const token = localStorage.getItem("token");
+
+// Vérifier le token avant toute chose
+if (!AUTH_TOKEN) {
+    alert("⚠️ Veuillez vous connecter pour réserver.");
+    window.location.href = "/login.html";
+}
 
 // Récupérer l'ID du trajet depuis l'URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -15,56 +22,48 @@ const tripId = urlParams.get("trip");
 console.log("🔍 Trip ID:", tripId);
 
 if (!tripId) {
-  alert("Aucun trajet sélectionné");
-  window.location.href = "/reservation.html";
+    alert("Aucun trajet sélectionné");
+    window.location.href = "/reservation.html";
 }
 
 // Charger les détails du trajet et les sièges
 async function loadTripAndSeats() {
-  try {
-    console.log("📡 Appel API:", `${API_URL}/trips/${tripId}`);
+    try {
+        console.log("📡 Appel API:", `${API_BASE}/trips/${tripId}`);
 
-    const response = await fetch(`${API_URL}/trips/${tripId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
+        const response = await fetch(`${API_BASE}/trips/${tripId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                ...(AUTH_TOKEN && { Authorization: `Bearer ${AUTH_TOKEN}` }),
+            },
+        });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        tripData = await response.json();
+        console.log("✅ Données du trajet:", tripData);
+
+        displayTripDetails();
+
+        if (tripData.seats_available && tripData.seats_available.length > 0) {
+            tripData.seats_available.sort((a, b) => {
+                const numA = parseInt(a.numero_siege.replace(/\D/g, ""));
+                const numB = parseInt(b.numero_siege.replace(/\D/g, ""));
+                return numA - numB;
+            });
+            generateSeats(tripData.seats_available);
+        } else {
+            generateTestSeats(tripData.places_disponibles || 50);
+        }
+    } catch (error) {
+        console.error("❌ Erreur:", error);
+        generateTestSeats(50);
     }
-
-    tripData = await response.json();
-    console.log("✅ Données du trajet:", tripData);
-
-    displayTripDetails();
-
-    if (tripData.seats_available && tripData.seats_available.length > 0) {
-      console.log("✅ Sièges de l'API:", tripData.seats_available.length);
-      // Trier les sièges par numéro
-      tripData.seats_available.sort((a, b) => {
-        const numA = parseInt(a.numero_siege.replace(/\D/g, ""));
-        const numB = parseInt(b.numero_siege.replace(/\D/g, ""));
-        return numA - numB;
-      });
-      generateSeats(tripData.seats_available);
-    } else {
-      console.warn("⚠️ Pas de données de sièges, génération de sièges test");
-      generateTestSeats(tripData.places_disponibles || 50);
-    }
-  } catch (error) {
-    console.error("❌ Erreur:", error);
-    document.getElementById("tripDetails").innerHTML = `
-            <div class="alert alert-danger">
-                <strong>Erreur de chargement</strong><br>
-                ${error.message}
-            </div>
-        `;
-    generateTestSeats(50);
-  }
 }
+
 
 // Générer des sièges de test
 function generateTestSeats(capacity) {
@@ -258,59 +257,69 @@ function updateSummary() {
 }
 
 // Confirmer la réservation
-document
-  .getElementById("confirmBooking")
-  ?.addEventListener("click", async () => {
-    if (!token) {
-      alert("Veuillez vous connecter pour réserver");
-      window.location.href = "/";
-      return;
+document.getElementById("confirmBooking")?.addEventListener("click", async () => {
+    // 🔥 Re-vérifier le token à chaque clic
+    const currentToken = localStorage.getItem("token");
+    
+    if (!currentToken) {
+        alert("⚠️ Votre session a expiré. Veuillez vous reconnecter.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login.html";
+        return;
     }
 
     if (selectedSeats.length === 0) {
-      alert("Veuillez sélectionner au moins un siège");
-      return;
+        alert("Veuillez sélectionner au moins un siège");
+        return;
     }
+
+    console.log("📡 Envoi réservation avec token:", currentToken.substring(0, 20) + "...");
 
     try {
-      const response = await fetch(`${API_URL}/bookings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          trip_id: tripId,
-          seats: selectedSeats,
-          nb_passagers: selectedSeats.length,
-        }),
-      });
+        const response = await fetch(`${API_BASE}/bookings`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${currentToken}`,
+            },
+            body: JSON.stringify({
+                trip_id: parseInt(tripId),
+                seats: selectedSeats,
+                nb_passagers: selectedSeats.length,
+            }),
+        });
 
-      const data = await response.json();
+        console.log("📡 Statut réponse:", response.status);
 
-      if (response.ok) {
-        // Sauvegarder TOUTES les données nécessaires
-        localStorage.setItem(
-          "lastBooking",
-          JSON.stringify({
-            bookingId: data.booking_id,
-            tripDetails: tripData,
-            seats: selectedSeats,
-            totalPrice: data.prix_total,
-            timestamp: new Date().toISOString(),
-          }),
-        );
+        if (response.status === 403 || response.status === 401) {
+            alert("⚠️ Votre session a expiré. Veuillez vous reconnecter.");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/login.html";
+            return;
+        }
 
-        // Rediriger vers la confirmation
-        window.location.href = "/confirmation.html";
-      } else {
-        alert(data.message || "Erreur lors de la réservation");
-      }
+        const data = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem("lastBooking", JSON.stringify({
+                bookingId: data.booking_id,
+                tripDetails: tripData,
+                seats: selectedSeats,
+                totalPrice: data.prix_total,
+                timestamp: new Date().toISOString(),
+            }));
+
+            window.location.href = "/confirmation.html";
+        } else {
+            alert(data.message || "Erreur lors de la réservation");
+        }
     } catch (error) {
-      console.error("❌ Erreur:", error);
-      alert("Erreur de connexion au serveur");
+        console.error("❌ Erreur réseau:", error);
+        alert("Erreur de connexion au serveur. Vérifiez votre connexion internet.");
     }
-  });
+});
 
 // Debug
 function debugSeats() {
@@ -351,6 +360,31 @@ function debugSeats() {
   console.log("================================\n");
 }
 
+// Gestion navbar simplifiée
+(function() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const loginNav = document.getElementById('loginNavItem');
+    const userDropdown = document.getElementById('userDropdownMenu');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    
+    if (user && localStorage.getItem('token')) {
+        if (loginNav) loginNav.style.display = 'none';
+        if (userDropdown) userDropdown.style.display = 'block';
+        if (userNameDisplay) userNameDisplay.textContent = user.nom;
+    } else {
+        if (loginNav) loginNav.style.display = 'block';
+        if (userDropdown) userDropdown.style.display = 'none';
+    }
+})();
+
+function logout(e) {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+}
+
 // Initialiser la page
 console.log("🚀 Initialisation de la page sièges...");
 loadTripAndSeats();
+
